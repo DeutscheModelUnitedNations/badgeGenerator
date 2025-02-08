@@ -1,28 +1,7 @@
 import { PDFDocument, rgb, StandardFonts, PageSizes, PDFPage, PDFFont, degrees } from 'pdf-lib';
 import type { PlacardDataRow, PlacardDataTable } from './tableSchema';
 import type { Brand } from './brands';
-
-interface PageStyles {
-	margin: {
-		left: number;
-		right: number;
-		top: number;
-		bottom: number;
-	};
-	colors: {
-		gray: { r: number; g: number; b: number };
-		black: { r: number; g: number; b: number };
-		blue: { r: number; g: number; b: number }; // Added blue color
-	};
-	fontSize: {
-		title: number;
-		heading: number;
-		normal: number;
-	};
-	lineHeight: {
-		normal: number;
-	};
-}
+import { type PageStyles, fetchUint8Array, fetchFinalImageData } from './pdfCommon';
 
 const defaultStyles: PageStyles = {
 	margin: {
@@ -76,19 +55,20 @@ class PDFPlacardGenerator {
 
 		switch (this.brand) {
 			case 'MUN-SH':
-				brandLogo = '/logo/mun-sh.png';
+				brandLogo = '/logo/watermark/mun-sh.png';
 				break;
 			case 'MUNBW':
-				brandLogo = '/logo/munbw.png';
+				brandLogo = '/logo/watermark/munbw.png';
 				break;
 		}
 
-		const brandLogoImage = await fetch(brandLogo).then(async (response) => {
-			const blob = await response.blob();
-			const arrayBuffer = await blob.arrayBuffer();
-			const uint8Array = new Uint8Array(arrayBuffer);
-			return uint8Array;
-		});
+		let brandLogoImage: Uint8Array | undefined;
+
+		try {
+			brandLogoImage = await fetchUint8Array(brandLogo);
+		} catch (error) {
+			console.error('Error loading brand logo:', error);
+		}
 
 		const LOGO_DISTANCE_FROM_VERTICAL_MIDDLE = 160;
 		const LOGO_DISTANCE_FROM_HORIZONTAL_MIDDLE = 250;
@@ -96,104 +76,91 @@ class PDFPlacardGenerator {
 		const LOGO_IMG_HEIGHT = 130;
 		const LOGO_IMG_OPACITY = 0.1;
 
-		this.page.drawImage(await this.pdfDoc.embedPng(brandLogoImage), {
-			x: width / 2 - LOGO_DISTANCE_FROM_HORIZONTAL_MIDDLE + LOGO_IMG_WIDTH / 2,
-			y: height / 2 + LOGO_DISTANCE_FROM_VERTICAL_MIDDLE,
-			width: LOGO_IMG_WIDTH,
-			height: LOGO_IMG_HEIGHT,
+		try {
+			if (!brandLogoImage) {
+				throw new Error('Brand logo not found');
+			}
+			this.page.drawImage(await this.pdfDoc.embedPng(brandLogoImage), {
+				x: width / 2 - LOGO_DISTANCE_FROM_HORIZONTAL_MIDDLE + LOGO_IMG_WIDTH / 2,
+				y: height / 2 + LOGO_DISTANCE_FROM_VERTICAL_MIDDLE,
+				width: LOGO_IMG_WIDTH,
+				height: LOGO_IMG_HEIGHT,
+				rotate: degrees(180),
+				opacity: LOGO_IMG_OPACITY
+			});
+
+			this.page.drawImage(await this.pdfDoc.embedPng(brandLogoImage), {
+				x: width / 2 + LOGO_DISTANCE_FROM_HORIZONTAL_MIDDLE + LOGO_IMG_WIDTH / 2,
+				y: height / 2 + LOGO_DISTANCE_FROM_VERTICAL_MIDDLE,
+				width: LOGO_IMG_WIDTH,
+				height: LOGO_IMG_HEIGHT,
+				rotate: degrees(180),
+				opacity: LOGO_IMG_OPACITY
+			});
+
+			this.page.drawImage(await this.pdfDoc.embedPng(brandLogoImage), {
+				x: width / 2 - LOGO_DISTANCE_FROM_HORIZONTAL_MIDDLE - LOGO_IMG_WIDTH / 2,
+				y: height / 2 - LOGO_DISTANCE_FROM_VERTICAL_MIDDLE,
+				width: LOGO_IMG_WIDTH,
+				height: LOGO_IMG_HEIGHT,
+				opacity: LOGO_IMG_OPACITY
+			});
+
+			this.page.drawImage(await this.pdfDoc.embedPng(brandLogoImage), {
+				x: width / 2 + LOGO_DISTANCE_FROM_HORIZONTAL_MIDDLE - LOGO_IMG_WIDTH / 2,
+				y: height / 2 - LOGO_DISTANCE_FROM_VERTICAL_MIDDLE,
+				width: LOGO_IMG_WIDTH,
+				height: LOGO_IMG_HEIGHT,
+				opacity: LOGO_IMG_OPACITY
+			});
+		} catch (error) {
+			console.error('Error loading brand logo:', error);
+		}
+
+		const finalImageData = await fetchFinalImageData(this.rowData);
+
+		const MARGIN_FROM_MIDDLE = 20;
+		const IMG_WIDTH = 200;
+		const IMG_HEIGHT = 150;
+
+		const imgPosCommon = {
+			width: IMG_WIDTH,
+			height: IMG_HEIGHT
+		};
+
+		const img1Pos = {
+			x: width / 2 + IMG_WIDTH / 2,
+			y: height / 2 + IMG_HEIGHT + MARGIN_FROM_MIDDLE,
 			rotate: degrees(180),
-			opacity: LOGO_IMG_OPACITY
-		});
-
-		this.page.drawImage(await this.pdfDoc.embedPng(brandLogoImage), {
-			x: width / 2 + LOGO_DISTANCE_FROM_HORIZONTAL_MIDDLE + LOGO_IMG_WIDTH / 2,
-			y: height / 2 + LOGO_DISTANCE_FROM_VERTICAL_MIDDLE,
-			width: LOGO_IMG_WIDTH,
-			height: LOGO_IMG_HEIGHT,
-			rotate: degrees(180),
-			opacity: LOGO_IMG_OPACITY
-		});
-
-		this.page.drawImage(await this.pdfDoc.embedPng(brandLogoImage), {
-			x: width / 2 - LOGO_DISTANCE_FROM_HORIZONTAL_MIDDLE - LOGO_IMG_WIDTH / 2,
-			y: height / 2 - LOGO_DISTANCE_FROM_VERTICAL_MIDDLE,
-			width: LOGO_IMG_WIDTH,
-			height: LOGO_IMG_HEIGHT,
-			opacity: LOGO_IMG_OPACITY
-		});
-
-		this.page.drawImage(await this.pdfDoc.embedPng(brandLogoImage), {
-			x: width / 2 + LOGO_DISTANCE_FROM_HORIZONTAL_MIDDLE - LOGO_IMG_WIDTH / 2,
-			y: height / 2 - LOGO_DISTANCE_FROM_VERTICAL_MIDDLE,
-			width: LOGO_IMG_WIDTH,
-			height: LOGO_IMG_HEIGHT,
-			opacity: LOGO_IMG_OPACITY
-		});
+			...imgPosCommon
+		};
+		const img2Pos = {
+			x: width / 2 - IMG_WIDTH / 2,
+			y: height / 2 - IMG_HEIGHT - MARGIN_FROM_MIDDLE,
+			...imgPosCommon
+		};
 
 		try {
-			let finalImageData: Uint8Array | undefined;
-			if (this.rowData.alternativeImage) {
-				finalImageData = await fetch(this.rowData.alternativeImage).then(async (response) => {
-					const blob = await response.blob();
-					const arrayBuffer = await blob.arrayBuffer();
-					const uint8Array = new Uint8Array(arrayBuffer);
-					return uint8Array;
-				});
-			} else {
-				// Fetch flag SVG from our API endpoint
-				const countryCode = this.rowData.countryAlpha2Code;
-				const response = await fetch(`/api/flags/${countryCode}`);
-
-				if (!response.ok) throw new Error('Flag not found');
-
-				const flagImg = await response.blob();
-
-				// convert the blob to a 8intUintArray
-				const arrayBuffer = await flagImg.arrayBuffer();
-				finalImageData = new Uint8Array(arrayBuffer);
-			}
-
 			if (!finalImageData) {
 				throw new Error('Flag not found');
 			}
 
-			const MARGIN_FROM_MIDDLE = 20;
-			const IMG_WIDTH = 200;
-			const IMG_HEIGHT = 150;
-
-			const img1Pos = {
-				x: width / 2 + IMG_WIDTH / 2,
-				y: height / 2 + IMG_HEIGHT + MARGIN_FROM_MIDDLE,
-				width: IMG_WIDTH,
-				height: IMG_HEIGHT,
-				rotate: degrees(180)
-			};
-
-			this.page.drawImage(await this.pdfDoc.embedPng(finalImageData), {
-				...img1Pos
-			});
-			this.page.drawRectangle({
-				...img1Pos,
-				borderColor: rgb(0, 0, 0),
-				borderWidth: 1
-			});
-
-			const img2Pos = {
-				x: width / 2 - IMG_WIDTH / 2,
-				y: height / 2 - IMG_HEIGHT - MARGIN_FROM_MIDDLE,
-				width: IMG_WIDTH,
-				height: IMG_HEIGHT
-			};
-
+			this.page.drawImage(await this.pdfDoc.embedPng(finalImageData), img1Pos);
 			this.page.drawImage(await this.pdfDoc.embedPng(finalImageData), img2Pos);
-			this.page.drawRectangle({
-				...img2Pos,
-				borderColor: rgb(0, 0, 0),
-				borderWidth: 1
-			});
 		} catch (error) {
 			console.error('Error loading flag:', error);
 		}
+
+		this.page.drawRectangle({
+			...img1Pos,
+			borderColor: rgb(0, 0, 0),
+			borderWidth: 1
+		});
+		this.page.drawRectangle({
+			...img2Pos,
+			borderColor: rgb(0, 0, 0),
+			borderWidth: 1
+		});
 
 		const nameText = this.rowData.committee
 			? `${this.rowData.name} (${this.rowData.committee})`
@@ -263,21 +230,4 @@ export async function generateCompletePDF(
 	}
 
 	return pdfDoc.save();
-}
-
-export async function generatePlacard(fileData: PlacardDataTable, brand: Brand): Promise<void> {
-	try {
-		const pdfBytes = await generateCompletePDF(fileData, brand);
-
-		const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-		const url = URL.createObjectURL(blob);
-		const link = document.createElement('a');
-		link.href = url;
-		link.download = 'mun-sh-registration.pdf';
-		link.click();
-		URL.revokeObjectURL(url);
-	} catch (error) {
-		console.error('Error generating registration form:', error);
-		throw error;
-	}
 }

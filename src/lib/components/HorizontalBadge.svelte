@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { placardSchema, type PlacardDataTable } from '$lib/tableSchema';
-	import { generateCompletePDF } from '$lib/placardGeneration';
+	import { badgeSchema, placardSchema, type BadgeDataTable } from '$lib/tableSchema';
+	import { generateCompletePDF } from '$lib/horizontalBadgeGeneration';
 	import type { Brand } from '$lib/brands';
 
 	interface Props {
-		fileData: PlacardDataTable;
+		fileData: BadgeDataTable;
 		brand: Brand;
 	}
 
@@ -27,7 +27,7 @@
 
 	$effect(() => {
 		loading = true;
-		const { success } = placardSchema.safeParse(fileData);
+		const { success } = badgeSchema.safeParse(fileData);
 		if (!success) {
 			validationFailed = true;
 			return;
@@ -60,7 +60,7 @@
 			onclick={() => {
 				const link = document.createElement('a');
 				link.href = pdfUrl;
-				link.download = 'placards.pdf';
+				link.download = 'horizontal-badges.pdf';
 				link.click();
 			}}
 		>

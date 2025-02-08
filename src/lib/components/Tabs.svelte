@@ -1,23 +1,21 @@
-<script lang="ts">
+<script lang="ts" generics="T extends string">
 	interface Props {
-		tabs: {
-			title: string;
-			value: string;
-			active?: boolean;
+		tabs: readonly {
+			readonly title: string;
+			readonly value: T;
 		}[];
-		activeTab?: string;
-		onClick: (value: string) => void;
+		activeTab?: T;
 	}
 
-	let { tabs, activeTab, onClick }: Props = $props();
+	let { tabs, activeTab = $bindable() }: Props = $props();
 </script>
 
 <div role="tablist" class="tabs-boxed tabs">
-	{#each tabs as { title, value, active }}
+	{#each tabs as { title, value }}
 		<button
 			role="tab"
-			class="tab {(active || activeTab === value) && 'tab-active'}"
-			onclick={() => onClick(value)}
+			class="tab {activeTab === value && 'tab-active'}"
+			onclick={() => (activeTab = value)}
 		>
 			{title}
 		</button>

@@ -1,0 +1,207 @@
+import { PDFDocument, rgb, StandardFonts, PageSizes, PDFPage, PDFFont, degrees } from 'pdf-lib';
+import type { BadgeDataRow, BadgeDataTable } from './tableSchema';
+import type { Brand } from './brands';
+import { type PageStyles, hexToRGBColor, fetchUint8Array, fetchFinalImageData } from './pdfCommon';
+
+const defaultStyles: PageStyles = {
+	margin: {
+		left: 40,
+		right: 40,
+		top: 40,
+		bottom: 40
+	},
+	colors: {
+		gray: { r: 0.5, g: 0.5, b: 0.5 },
+		black: { r: 0, g: 0, b: 0 },
+		blue: { r: 0.478, g: 1, b: 0 } // RGB value for a bright blue color (approximating the PDF)
+	},
+	fontSize: {
+		title: 16,
+		heading: 11,
+		normal: 7
+	},
+	lineHeight: {
+		normal: 1.2
+	}
+};
+
+class PDFHorizontalBadgeGenerator {
+	pdfDoc: PDFDocument;
+	page!: PDFPage;
+	styles: PageStyles;
+	helvetica!: PDFFont;
+	helveticaBold!: PDFFont;
+	rowData!: BadgeDataRow;
+	brand!: Brand;
+
+	constructor(pdfDoc: PDFDocument, styles = defaultStyles, rowData: BadgeDataRow, brand: Brand) {
+		this.pdfDoc = pdfDoc;
+		this.styles = styles;
+		this.rowData = rowData;
+		this.brand = brand;
+	}
+
+	protected async initialize(): Promise<void> {
+		this.helvetica = await this.pdfDoc.embedFont(StandardFonts.Helvetica);
+		this.helveticaBold = await this.pdfDoc.embedFont(StandardFonts.HelveticaBold);
+		// Change to landscape by switching width and height
+		this.page = this.pdfDoc.addPage([241.0, 155.91]);
+	}
+
+	async generateContent(): Promise<void> {
+		const { width, height } = this.page.getSize();
+
+		let brandLogo;
+		let primaryColor;
+		let conferenceName;
+
+		switch (this.brand) {
+			case 'MUN-SH':
+				brandLogo = '/logo/color/mun-sh.png';
+				primaryColor = '#0089E3';
+				conferenceName = `Schleswig-Holstein ${new Date().getFullYear()}`;
+				break;
+			case 'MUNBW':
+				brandLogo = '/logo/color/munbw.png';
+				primaryColor = '#0C4695';
+				conferenceName = `Baden-Württemberg ${new Date().getFullYear()}`;
+				break;
+		}
+
+		const brandLogoImage = await fetchUint8Array(brandLogo);
+
+		const finalImageData = await fetchFinalImageData(this.rowData);
+
+		const IMG_MARGIN_BOTTOM = 16;
+		const IMG_MARGIN_LEFT = 20;
+		const IMG_WIDTH = 100;
+		const IMG_HEIGHT = 75;
+
+		const imgPos = {
+			x: IMG_MARGIN_LEFT,
+			y: IMG_MARGIN_BOTTOM,
+			width: IMG_WIDTH,
+			height: IMG_HEIGHT
+		};
+
+		try {
+			if (!finalImageData) {
+				throw new Error('Flag not found');
+			}
+			this.page.drawImage(await this.pdfDoc.embedPng(finalImageData), {
+				...imgPos
+			});
+		} catch (error) {
+			console.error('Error loading flag:', error);
+		}
+
+		this.page.drawRectangle({
+			...imgPos,
+			borderColor: rgb(0, 0, 0),
+			borderWidth: 0.5
+		});
+
+		const LOGO_SCALE = 0.8;
+		const MIDDLE_OF_EMPTY_SPACE =
+			IMG_MARGIN_LEFT + IMG_WIDTH + (width - IMG_MARGIN_LEFT - IMG_WIDTH) / 2;
+		const LOGO_IMG_WIDTH = IMG_HEIGHT * LOGO_SCALE;
+		const LOGO_IMG_HEIGHT = IMG_HEIGHT * LOGO_SCALE;
+		const LOGO_OFFSET_Y = 8;
+
+		try {
+			if (!brandLogoImage) {
+				throw new Error('Logo not found');
+			}
+			this.page.drawImage(await this.pdfDoc.embedPng(brandLogoImage), {
+				x: MIDDLE_OF_EMPTY_SPACE - LOGO_IMG_WIDTH / 2,
+				y: IMG_MARGIN_BOTTOM + (IMG_HEIGHT - LOGO_IMG_HEIGHT) / 2 + LOGO_OFFSET_Y,
+				width: LOGO_IMG_WIDTH,
+				height: LOGO_IMG_HEIGHT
+			});
+		} catch (error) {
+			console.error('Error loading logo:', error);
+		}
+
+		this.page.setFont(this.helvetica);
+		this.page.drawText('Model United Nations', {
+			x:
+				MIDDLE_OF_EMPTY_SPACE -
+				this.helvetica.widthOfTextAtSize('Model United Nations', this.styles.fontSize.normal) / 2,
+			y: IMG_MARGIN_BOTTOM + 7,
+			size: this.styles.fontSize.normal
+		});
+		this.page.drawText(conferenceName, {
+			x:
+				MIDDLE_OF_EMPTY_SPACE -
+				this.helvetica.widthOfTextAtSize(conferenceName, this.styles.fontSize.normal) / 2,
+			y: IMG_MARGIN_BOTTOM,
+			size: this.styles.fontSize.normal
+		});
+
+		const TITLE_MARGIN_TOP = 25;
+		this.page.setFont(this.helveticaBold);
+		this.page.drawText(this.rowData.countryName, {
+			x:
+				width / 2 -
+				this.helveticaBold.widthOfTextAtSize(this.rowData.countryName, this.styles.fontSize.title) /
+					2,
+			y: height - TITLE_MARGIN_TOP,
+			size: this.styles.fontSize.title
+		});
+
+		const NAME_MARGIN_TOP = 40;
+		const nameText = this.rowData.committee
+			? `${this.rowData.name} (${this.rowData.committee})`
+			: this.rowData.name;
+		this.page.setFont(this.helvetica);
+		this.page.drawText(nameText, {
+			x: width / 2 - this.helvetica.widthOfTextAtSize(nameText, this.styles.fontSize.heading) / 2,
+			y: height - NAME_MARGIN_TOP,
+			size: this.styles.fontSize.heading
+		});
+
+		const PRONOUNS_MARGIN_TOP = 52;
+		if (this.rowData.pronouns) {
+			this.page.drawText(this.rowData.pronouns, {
+				x:
+					width / 2 -
+					this.helvetica.widthOfTextAtSize(this.rowData.pronouns, this.styles.fontSize.heading) / 2,
+				y: height - PRONOUNS_MARGIN_TOP,
+				size: this.styles.fontSize.heading
+			});
+		}
+
+		const DECOR_LINE_DISTANCE_FROM_BOTTOM = 4;
+
+		this.page.drawLine({
+			start: { x: 0, y: DECOR_LINE_DISTANCE_FROM_BOTTOM },
+			end: { x: width, y: DECOR_LINE_DISTANCE_FROM_BOTTOM },
+			thickness: 8,
+			color: hexToRGBColor(primaryColor)
+		});
+	}
+
+	public async generate(): Promise<PDFPage> {
+		await this.initialize();
+		await this.generateContent();
+		return this.page;
+	}
+}
+
+export async function generateCompletePDF(
+	fileData: BadgeDataTable,
+	brand: Brand
+): Promise<Uint8Array> {
+	const pdfDoc = await PDFDocument.create();
+
+	// Create base pages
+	const pageGenerators = fileData.map(
+		(row) => new PDFHorizontalBadgeGenerator(pdfDoc, defaultStyles, row, brand)
+	);
+	// Generate all pages
+	for (const generator of pageGenerators) {
+		await generator.generate();
+	}
+
+	return pdfDoc.save();
+}

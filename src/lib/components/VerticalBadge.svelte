@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { placardSchema, type PlacardDataTable } from '$lib/tableSchema';
-	import { generateCompletePDF } from '$lib/placardGeneration';
+	import { badgeSchema, placardSchema, type BadgeDataTable } from '$lib/tableSchema';
+	import { generateCompletePDF } from '$lib/verticalBadgeGeneration';
 	import type { Brand } from '$lib/brands';
 
 	interface Props {
-		fileData: PlacardDataTable;
+		fileData: BadgeDataTable;
 		brand: Brand;
 	}
 
@@ -27,7 +27,7 @@
 
 	$effect(() => {
 		loading = true;
-		const { success } = placardSchema.safeParse(fileData);
+		const { success } = badgeSchema.safeParse(fileData);
 		if (!success) {
 			validationFailed = true;
 			return;
@@ -43,8 +43,7 @@
 <div class="flex w-full flex-col gap-4">
 	{#if validationFailed}
 		<div class="alert alert-error">
-			The provided data is invalid for this type. Please select the appropriate type and check the
-			input file.
+			Die bereitgestellten Daten sind für diesen Typ ungültig. Bitte wählen Sie den entsprechenden Typ aus und überprüfen Sie die Eingabedatei.
 		</div>
 	{:else}
 		{#if loading}
@@ -60,7 +59,7 @@
 			onclick={() => {
 				const link = document.createElement('a');
 				link.href = pdfUrl;
-				link.download = 'placards.pdf';
+				link.download = 'vertical-badges.pdf';
 				link.click();
 			}}
 		>

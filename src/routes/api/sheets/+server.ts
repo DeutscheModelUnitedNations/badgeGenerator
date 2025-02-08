@@ -33,12 +33,6 @@ export const GET: RequestHandler = async ({ url }) => {
 		const headers = rows.shift();
 		const table = rows.map((row) => Object.fromEntries(row.map((value, i) => [headers[i], value])));
 
-		const { success } = placardSchema.safeParse(table);
-
-		if (success === false) {
-			return new Response(JSON.stringify({ message: 'Invalid data', error: true }), { status: 400 });
-		}
-
 		return json(table);
 	} catch (error) {
 		return new Response(error.message, { status: 500 });

@@ -34,7 +34,7 @@ export async function fetchFinalImageData(rowData: {
 		if (rowData.alternativeImage) {
 			return await fetchUint8Array(`/uploads/${rowData.alternativeImage}`);
 		} else {
-			return await fetchUint8Array(`/api/flags/${rowData.countryAlpha2Code}`);
+			return await fetchUint8Array(`/flags/${rowData.countryAlpha2Code}.png`);
 		}
 	} catch (error) {
 		console.error('Error loading flag:', error);

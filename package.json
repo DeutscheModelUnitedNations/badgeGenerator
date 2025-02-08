@@ -5,7 +5,8 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
-		"build": "vite build",
+		"build": "bun run build:flags && bun run build:vite",
+		"build:vite": "vite build",
 		"build:flags": "bun prepareFlags.ts",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",

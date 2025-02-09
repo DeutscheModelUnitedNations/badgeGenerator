@@ -32,12 +32,22 @@ export const GET: RequestHandler = async ({ url }) => {
 		}
 
 		// transform into a table with headers and rows, and return as JSON
-		const headers = rows.shift() || [];
+		const headers = rows[0] || [];
 		const table = rows.map((row) => Object.fromEntries(row.map((value, i) => [headers[i], value])));
 
-		return json(table);
+		return json(table, {
+			headers: {
+				'Access-Control-Allow-Origin': '*',
+				'Cache-Control': 'no-cache'
+			}
+		});
 	} catch (error) {
 		console.error('Error when fetching from google sheets: ' + error);
-		return new Response((error as any).message, { status: 500 });
+		return new Response((error as any).message, {
+			status: 500,
+			headers: {
+				'Access-Control-Allow-Origin': '*'
+			}
+		});
 	}
 };

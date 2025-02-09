@@ -28,7 +28,12 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		}
 
 		const preparedImage = await sharp(uint8Array)
-			.resize({ width: 1200, height: 900, background: '#ffffff', fit: 'contain' })
+			.resize({
+				width: 1200,
+				height: 900,
+				background: extension === 'png' ? undefined : '#ffffff',
+				fit: 'cover'
+			})
 			.toBuffer();
 
 		await new Promise<void>((resolve, reject) => {

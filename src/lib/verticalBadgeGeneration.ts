@@ -105,7 +105,7 @@ class PDFVerticalBadgeGenerator {
 		this.page.drawRectangle({
 			...imgPos,
 			borderColor: rgb(0, 0, 0),
-			borderWidth: 0.5
+			borderWidth: 1
 		});
 
 		const LOGO_IMG_WIDTH = 60;

@@ -102,7 +102,7 @@ class PDFHorizontalBadgeGenerator {
 		this.page.drawRectangle({
 			...imgPos,
 			borderColor: rgb(0, 0, 0),
-			borderWidth: 0.5
+			borderWidth: 1,
 		});
 
 		const LOGO_SCALE = 0.8;

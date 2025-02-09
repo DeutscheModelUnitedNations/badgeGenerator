@@ -37,8 +37,8 @@
 			referenzieren, indem du in der Spalte "alternativeImage" den Namen angibts (ohne Dateiendung).
 		</p>
 		<p>
-			Es können nur Bilder im Format <strong>.jpg, .jpeg und .png</strong> hochgeladen werden und
-			müssen im <strong>Format 4x3</strong> sein!
+			Es können nur Bilder im Format <strong>.jpg, .jpeg, .png und .svg</strong> hochgeladen werden und
+			müssen im <strong>Format 4x3</strong> sein – andernfalls werden sie ohne verzerrung zugeschnitten.
 		</p>
 	</div>
 </div>

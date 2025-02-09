@@ -47,7 +47,7 @@
 
 <input
 	type="file"
-	accept=".png, .jpg, .jpeg"
+	accept=".png, .jpg, .jpeg, .svg"
 	bind:files={imgFiles}
 	bind:this={imgInput}
 	onchange={() => imgFiles && uploadImage(imgFiles[0])}

@@ -26,16 +26,16 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			return new Response('File too large', { status: 413 });
 		}
 
-		console.log('Saving image:', title, extension, uint8Array.length);
-
 		await new Promise<void>((resolve, reject) => {
 			db.run(
 				`INSERT OR REPLACE INTO image (title, extension, image) 
                  VALUES (?, ?, ?)`,
 				[title, extension, uint8Array],
 				(err: Error) => {
-					if (err) throw err;
-					else resolve();
+					if (err) {
+						console.log('Error inserting image:', err);
+						throw err;
+					} else resolve();
 				}
 			);
 		});

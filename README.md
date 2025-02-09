@@ -1,38 +1,37 @@
-# sv
+# Badge and Placard Generator
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+This repository contains a tool designed to generate Name Badges and Placards for Model United Nations (MUN) Conferences. The project is structured to make it easy to customize and generate tags for various events or purposes just using a tabular data source (csv, xlsx, google sheets link).
 
-## Creating a project
+## Features
 
-If you're seeing this, you've probably already done this step. Congrats!
+- templates
+  - `horizontal badge` - 85mm x 55mm for pinning
+  - `vertical badge` - 55mm x 85mm for lanyard
+  - `placard` - A4 for table display
+- Simple integration
+  - `csv` - Comma Separated Values
+  - `xlsx` - Excel Spreadsheet
+  - `google sheets` - Google Sheets Link
+- Custom Image Support: Add a custom image to the badge or use built in flag library
+- Easy-to-use interface for generating printable tags
 
-```bash
-# create a new project in the current directory
-npx sv create
+## Usage
 
-# create a new project in my-app
-npx sv create my-app
-```
+> [!IMPORTANT]
+> The project is custom tailored for Conferences of Deutsche Model United Nations and contains logos and corporate identity elements of the organization. To customize the project for your own use, you will need to replace the logos and other elements with your own and adjust the templates as needed.
 
-## Developing
+1. Clone the repository.
+2. Customize the configuration or templates as needed.
+3. Build the docker image.
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+## Getting Started
 
-```bash
-npm run dev
+Ensure you have the necessary prerequisites installed. Follow the instructions in the documentation for setup and execution.
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
+## Contributing
 
-## Building
+Contributions are welcome. Please open an issue or submit a pull request with improvements. Feel free to reach out to the maintainers for any questions or concerns.
 
-To create a production version of your app:
+## License
 
-```bash
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+This project is licensed under the [MIT License](LICENSE).

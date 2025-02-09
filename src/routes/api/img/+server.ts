@@ -25,20 +25,24 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		if (uint8Array.length > MAX_SIZE) {
 			return new Response('File too large', { status: 413 });
 		}
-
+		console.log('Pre ' + uint8Array.slice(0, 10));
 		await new Promise<void>((resolve, reject) => {
+			console.log('In Promise' + uint8Array.slice(0, 10));
 			db.run(
 				`INSERT OR REPLACE INTO image (title, extension, image) 
-                 VALUES (?, ?, ?)`,
+				VALUES (?, ?, ?)`,
 				[title, extension, uint8Array],
 				(err: Error) => {
+					console.log('In Callback' + uint8Array.slice(0, 10));
 					if (err) {
 						console.log('Error inserting image:', err);
 						throw err;
 					} else resolve();
 				}
 			);
+			console.log('After db.run' + uint8Array.slice(0, 10));
 		});
+		console.log('Post' + uint8Array.slice(0, 10));
 
 		return new Response(null, {
 			status: 201,

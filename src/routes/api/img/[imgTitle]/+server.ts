@@ -17,6 +17,7 @@ export const GET: RequestHandler = async ({ locals, params, url }) => {
 		);
 
 		if (!result) {
+			console.error('Image not found:', params.imgTitle);
 			return new Response('Image not found', {
 				status: 404,
 				headers: { 'Content-Type': 'text/plain' }
@@ -28,6 +29,7 @@ export const GET: RequestHandler = async ({ locals, params, url }) => {
 			result.image = new Uint8Array(buffer);
 		}
 
+		console.info('Image found:', params.imgTitle);
 		return new Response(result.image, {
 			headers: {
 				'Content-Type': `image/${result.extension}`,
@@ -36,6 +38,7 @@ export const GET: RequestHandler = async ({ locals, params, url }) => {
 			}
 		});
 	} catch (err) {
+		console.error(err);
 		return new Response('Database error', {
 			status: 500,
 			headers: { 'Content-Type': 'text/plain' }

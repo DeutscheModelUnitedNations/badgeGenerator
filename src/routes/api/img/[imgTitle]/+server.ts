@@ -7,9 +7,9 @@ export const GET: RequestHandler = async ({ locals, params, url }) => {
 		const db = locals.db;
 		const query = `SELECT extension, image FROM image WHERE title = ?`;
 
-		const result = await new Promise<{ extension: string; image: Uint8Array } | undefined>(
+		const result = await new Promise<{ extension: string; image: string } | undefined>(
 			(resolve, reject) => {
-				db.get<Image>(query, [params.imgTitle], (err: Error, row: any) => {
+				db.get<Image>(query, [params.imgTitle], (err: Error | null, row: Image) => {
 					if (err) reject(err);
 					else resolve(row as typeof result);
 				});
@@ -24,13 +24,14 @@ export const GET: RequestHandler = async ({ locals, params, url }) => {
 			});
 		}
 
+		let image = Buffer.from(result.image, 'base64');
+
 		if (url.searchParams.has('preview')) {
-			const buffer = await sharp(result.image).resize({ width: 200 }).toBuffer();
-			result.image = new Uint8Array(buffer);
+			image = await sharp(image).resize({ width: 200 }).toBuffer();
 		}
 
 		console.info('Image found:', params.imgTitle);
-		return new Response(result.image, {
+		return new Response(image, {
 			headers: {
 				'Content-Type': `image/${result.extension}`,
 				'Content-Disposition': `inline; filename="${params.imgTitle}.${result.extension}"`,

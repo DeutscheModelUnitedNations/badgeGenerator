@@ -39,6 +39,7 @@
 			}
 
 			const data = await response.json();
+			data.shift(); // Remove header row
 			setFileData(data);
 		} catch (error) {
 			console.error('Error fetching sheet:', error);

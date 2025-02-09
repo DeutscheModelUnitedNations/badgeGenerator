@@ -1,4 +1,5 @@
 import type { RequestHandler } from './$types';
+import sharp from 'sharp';
 
 export const POST: RequestHandler = async ({ request, locals }) => {
 	const db = locals.db;
@@ -25,24 +26,23 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		if (uint8Array.length > MAX_SIZE) {
 			return new Response('File too large', { status: 413 });
 		}
-		console.log('Pre ' + uint8Array.slice(0, 10));
+
+		const preparedImage = await sharp(uint8Array)
+			.resize({ width: 1200, height: 900, background: '#ffffff', fit: 'contain' })
+			.toBuffer();
+
 		await new Promise<void>((resolve, reject) => {
-			console.log('In Promise' + uint8Array.slice(0, 10));
 			db.run(
 				`INSERT OR REPLACE INTO image (title, extension, image) 
 				VALUES (?, ?, ?)`,
-				[title, extension, uint8Array],
+				[title, extension, preparedImage.toString('base64')],
 				(err: Error) => {
-					console.log('In Callback' + uint8Array.slice(0, 10));
 					if (err) {
-						console.log('Error inserting image:', err);
 						throw err;
 					} else resolve();
 				}
 			);
-			console.log('After db.run' + uint8Array.slice(0, 10));
 		});
-		console.log('Post' + uint8Array.slice(0, 10));
 
 		return new Response(null, {
 			status: 201,

@@ -14,7 +14,7 @@ const db = await new Promise<sqlite3.Database>((resolve) => {
 
 console.info('Database Hook: Creating table');
 		const query =
-			'CREATE TABLE IF NOT EXISTS image (title TEXT NOT NULL PRIMARY KEY, extension TEXT NOT NULL, image BLOB NOT NULL)';
+			'CREATE TABLE IF NOT EXISTS image (title TEXT NOT NULL PRIMARY KEY, extension TEXT NOT NULL, image TEXT NOT NULL)';
 		await new Promise<void>(resolve => {
 			db.run(query, (err) => {
 				if (err) {

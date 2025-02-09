@@ -15,6 +15,11 @@ This repository contains a tool designed to generate Name Badges and Placards fo
 - Custom Image Support: Add a custom image to the badge or use built in flag library
 - Easy-to-use interface for generating printable tags
 
+## FAQ
+
+### Why does the project not supply an arm64 image?
+Sqlite3 needs to be installed from source on arm64 systems. Since we don't deploy on arm64 systems yet, we took the easy way out and built the image for amd64 systems only. Please feel free to open an issue if you need an arm64 image.
+
 ## Usage
 
 > [!IMPORTANT]

@@ -2,7 +2,6 @@ import { google } from 'googleapis';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { env } from '$env/dynamic/private';
-import { placardSchema } from '$lib/tableSchema';
 
 const sheets = google.sheets('v4');
 
@@ -15,8 +14,11 @@ export const GET: RequestHandler = async ({ url }) => {
 	try {
 		const spreadsheetId = url.searchParams.get('id');
 		if (!spreadsheetId) {
-			return new Response(JSON.stringify({ message: 'Missing id', error: true }), { status: 400 });
+			return new Response("Missing 'id' query parameter", { status: 400 });
 		}
+
+		console.info('Fetching from google sheets:', spreadsheetId);
+		console.info('API Key: ' + env.GOOGLE_API_KEY ? 'Set' : 'Missing');
 
 		const response = await sheets.spreadsheets.values.get({
 			auth,
@@ -26,7 +28,7 @@ export const GET: RequestHandler = async ({ url }) => {
 
 		const rows = response.data.values;
 		if (!rows) {
-			return new Response(JSON.stringify({ message: 'No data', error: true }), { status: 404 });
+			return new Response('No data found', { status: 404 });
 		}
 
 		// transform into a table with headers and rows, and return as JSON

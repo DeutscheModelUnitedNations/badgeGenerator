@@ -9,7 +9,7 @@ export const GET: RequestHandler = async ({ locals, params, url }) => {
 
 		const result = await new Promise<{ extension: string; image: Uint8Array } | undefined>(
 			(resolve, reject) => {
-				db.get(query, [params.imgTitle], (err, row) => {
+				db.get<Image>(query, [params.imgTitle], (err: Error, row: any) => {
 					if (err) reject(err);
 					else resolve(row as typeof result);
 				});
@@ -23,9 +23,9 @@ export const GET: RequestHandler = async ({ locals, params, url }) => {
 			});
 		}
 
-		// Check if preview param is set and generate a small preview if so
 		if (url.searchParams.has('preview')) {
-			result.image = await sharp(result.image).resize({ width: 200 }).toBuffer();
+			const buffer = await sharp(result.image).resize({ width: 200 }).toBuffer();
+			result.image = new Uint8Array(buffer);
 		}
 
 		return new Response(result.image, {
@@ -49,7 +49,7 @@ export const DELETE: RequestHandler = async ({ locals, params }) => {
 
 	try {
 		await new Promise<void>((resolve, reject) => {
-			db.run(query, [params.imgTitle], (err) => {
+			db.run(query, [params.imgTitle], (err: Error) => {
 				if (err) reject(err);
 				else resolve();
 			});

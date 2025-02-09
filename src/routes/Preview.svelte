@@ -26,8 +26,8 @@
 	let branding = $state<Brand>('MUN-SH');
 </script>
 
-<button class="btn btn-ghost" onclick={() => (fileData = undefined)}>Generator</button>
-<h1 class="text-4xl">Vorschau</h1>
+<button class="btn btn-ghost" onclick={() => (fileData = undefined)}>Zurück</button>
+<h1 class="text-4xl">Generator</h1>
 <Tabs tabs={typeTabs} bind:activeTab={type} />
 <Tabs tabs={brandingTabs} bind:activeTab={branding} />
 

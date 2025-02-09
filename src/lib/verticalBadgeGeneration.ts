@@ -1,9 +1,8 @@
-import { PDFDocument, rgb, StandardFonts, PageSizes, PDFPage, PDFFont, degrees } from 'pdf-lib';
+import { PDFDocument, rgb, StandardFonts, PDFPage, PDFFont } from 'pdf-lib';
 import type { BadgeDataRow, BadgeDataTable } from './tableSchema';
 import type { Brand } from './brands';
 import {
 	type PageStyles,
-	hexToRGBColor,
 	fetchUint8Array,
 	fetchFinalImageData,
 	drawImage

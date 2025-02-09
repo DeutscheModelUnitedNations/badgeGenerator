@@ -3,8 +3,7 @@
 	import { type PageData } from './$types';
 	import { invalidateAll } from '$app/navigation';
 
-	let { data }: PageData = $props();
-	let images = $derived(data.images);
+	let { images }: PageData = $props();
 
 	function copyToClipboard(title: string) {
 		navigator.clipboard.writeText(title).catch((err) => {
@@ -12,7 +11,7 @@
 		});
 	}
 
-	async function deleteImage(image) {
+	async function deleteImage(image: (typeof images)[0]) {
 		if (!confirm('Möchten Sie dieses Bild wirklich löschen?')) return;
 
 		fetch(`/api/img/${image.title}`, { method: 'DELETE' })
@@ -36,7 +35,10 @@
 			Nutze den untenstehenden Uploader, um Bilder hochzuladen. Du kannst sie in der Datentabelle
 			referenzieren, indem du in der Spalte "alternativeImage" den Namen angibts (ohne Dateiendung).
 		</p>
-		<p>Es können nur Bilder im Format <strong>.jpg, .jpeg und .png</strong> hochgeladen werden und müssen im <strong>Format 4x3</strong> sein!</p>
+		<p>
+			Es können nur Bilder im Format <strong>.jpg, .jpeg und .png</strong> hochgeladen werden und
+			müssen im <strong>Format 4x3</strong> sein!
+		</p>
 	</div>
 </div>
 

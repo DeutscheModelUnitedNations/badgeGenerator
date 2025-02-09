@@ -30,11 +30,11 @@ export const GET: RequestHandler = async ({ url }) => {
 		}
 
 		// transform into a table with headers and rows, and return as JSON
-		const headers = rows.shift();
+		const headers = rows.shift() || [];
 		const table = rows.map((row) => Object.fromEntries(row.map((value, i) => [headers[i], value])));
 
 		return json(table);
 	} catch (error) {
-		return new Response(error.message, { status: 500 });
+		return new Response((error as any).message, { status: 500 });
 	}
 };

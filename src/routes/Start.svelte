@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { placardSchema, type PlacardDataTable } from '$lib/tableSchema';
+	import { placardSchema, type PlacardDataTable, type TableSchema } from '$lib/tableSchema';
 	import * as XLSX from 'xlsx';
 	import ImageUploader from '$lib/components/ImageUploader.svelte';
 	import { onMount } from 'svelte';
@@ -41,7 +41,7 @@
 		}
 	}
 
-	function parseFileToJson(buffer: ArrayBuffer, filename: string) {
+	function parseFileToJson(buffer: ArrayBuffer, filename: string): TableSchema {
 		const isCSV = filename.toLowerCase().endsWith('.csv');
 
 		const workbook = isCSV
@@ -53,7 +53,7 @@
 	}
 </script>
 
-<h1 class="text-4xl">Name Tag Generator</h1>
+<h1 class="text-4xl">Namens- und Länderschilder</h1>
 
 <h3 class="text-xl">Quelldatei (.xlsx oder .csv) hier ablegen</h3>
 <input
@@ -62,7 +62,7 @@
 	multiple={false}
 	class="file-input file-input-bordered file-input-primary w-full max-w-lg"
 	onchange={(e) => {
-		const f = e.target.files[0];
+		const f = (e.target as HTMLInputElement).files?.[0];
 		if (f) {
 			const reader = new FileReader();
 			reader.onload = (e) => {

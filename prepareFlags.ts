@@ -1,7 +1,7 @@
 import { join } from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import svgToImg from 'svg-to-img';
+import svg2img from 'svg2img';
 import { readdirSync, writeFileSync, readFileSync } from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -14,7 +14,10 @@ const svgFiles = readdirSync(flagsDir).filter((f) => f.endsWith('.svg'));
 
 for (const file of svgFiles) {
 	const svgContent = readFileSync(join(flagsDir, file), 'utf-8');
-	const pngBuffer = await svgToImg.from(svgContent).toPng({ width: 900 });
 	const outputPath = join(outputDir, file.replace('.svg', '.png'));
-	writeFileSync(outputPath, pngBuffer);
+
+	svg2img(svgContent, (error, buffer) => {
+		writeFileSync(outputPath, buffer);
+	});
+	console.log(`Converted ${file} to ${outputPath}`);
 }

@@ -2,7 +2,6 @@ import { PDFDocument, rgb, StandardFonts, PageSizes, PDFPage, PDFFont, degrees }
 import type { PlacardDataRow, PlacardDataTable } from './tableSchema';
 import type { Brand } from './brands';
 import { type PageStyles, fetchUint8Array, fetchFinalImageData, drawImage } from './pdfCommon';
-import { fileTypeFromBuffer } from 'file-type';
 
 const defaultStyles: PageStyles = {
 	margin: {

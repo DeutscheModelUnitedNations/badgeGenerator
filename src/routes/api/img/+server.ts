@@ -29,7 +29,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 				`INSERT OR REPLACE INTO image (title, extension, image) 
                  VALUES (?, ?, ?)`,
 				[title, extension, uint8Array],
-				(err) => {
+				(err: Error) => {
 					if (err) reject(err);
 					else resolve();
 				}

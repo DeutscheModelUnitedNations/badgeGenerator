@@ -1,7 +1,13 @@
 import { PDFDocument, rgb, StandardFonts, PageSizes, PDFPage, PDFFont, degrees } from 'pdf-lib';
 import type { BadgeDataRow, BadgeDataTable } from './tableSchema';
 import type { Brand } from './brands';
-import { type PageStyles, hexToRGBColor, fetchUint8Array, fetchFinalImageData } from './pdfCommon';
+import {
+	type PageStyles,
+	hexToRGBColor,
+	fetchUint8Array,
+	fetchFinalImageData,
+	drawImage
+} from './pdfCommon';
 
 const defaultStyles: PageStyles = {
 	margin: {
@@ -68,9 +74,9 @@ class PDFHorizontalBadgeGenerator {
 				break;
 		}
 
-		const brandLogoImage = await fetchUint8Array(brandLogo);
+		const { img: brandLogoImage } = await fetchUint8Array(brandLogo);
 
-		const finalImageData = await fetchFinalImageData(this.rowData);
+		const { img: flagImg, type: flagType } = await fetchFinalImageData(this.rowData);
 
 		const IMG_MARGIN_BOTTOM = 16;
 		const IMG_MARGIN_LEFT = 20;
@@ -85,12 +91,10 @@ class PDFHorizontalBadgeGenerator {
 		};
 
 		try {
-			if (!finalImageData) {
+			if (!flagImg || !flagType) {
 				throw new Error('Flag not found');
 			}
-			this.page.drawImage(await this.pdfDoc.embedPng(finalImageData), {
-				...imgPos
-			});
+			drawImage(this, flagImg, flagType, imgPos);
 		} catch (error) {
 			console.error('Error loading flag:', error);
 		}

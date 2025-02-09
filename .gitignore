@@ -24,3 +24,5 @@ vite.config.ts.timestamp-*
 
 /static/flags/*
 !/static/flags/.gitkeep
+
+db.sqlite

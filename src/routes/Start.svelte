@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { placardSchema, type PlacardDataTable } from '$lib/tableSchema';
 	import * as XLSX from 'xlsx';
+	import ImageUploader from '$lib/components/ImageUploader.svelte';
+	import { onMount } from 'svelte';
 
 	interface Props {
 		setFileData: (data: PlacardDataTable) => void;
@@ -8,9 +10,16 @@
 
 	let { setFileData }: Props = $props();
 
-	let sheetsUrl = $state(
-		'https://docs.google.com/spreadsheets/d/1HQIc7k8NGnO5YRxxx0RJ-zxQhjlH4534DQAEVEjHNJA/edit?gid=0#gid=0'
-	);
+	let sheetsUrl = $state('');
+
+	onMount(() => {
+		const savedUrl = localStorage.getItem('sheetsUrl');
+		if (savedUrl) sheetsUrl = savedUrl;
+	});
+
+	// Update local storage when sheetsUrl changes.
+	$effect(() => localStorage.setItem('sheetsUrl', sheetsUrl));
+
 	let loading = $state(false);
 
 	async function fetchGoogleSheets(url: string) {
@@ -42,46 +51,6 @@
 		const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
 		return XLSX.utils.sheet_to_json(firstSheet);
 	}
-
-	let imgInput: HTMLInputElement;
-	let imgFiles = $state<FileList>();
-	let imgTitle = $state<string>();
-
-	function getBase64(image: File) {
-		const reader = new FileReader();
-		reader.readAsDataURL(image);
-
-		const nameParts = image.name.split('.');
-		if (nameParts.length !== 2) {
-			alert('Image filename must contain exactly one dot (i.e., a base name and an extension).');
-			return;
-		}
-
-		reader.onload = (e) => {
-			uploadImage(e.target.result, imgTitle || nameParts[0], nameParts[1]);
-		};
-	}
-
-	async function uploadImage(img: Base64URLString, title: string, extension: string) {
-		const data = {
-			image: img,
-			title,
-			extension
-		};
-
-		const response = await fetch('/img', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				Accept: 'application/json'
-			},
-			body: JSON.stringify(data)
-		});
-
-		const result = await response.json();
-
-		console.log(result);
-	}
 </script>
 
 <h1 class="text-4xl">Name Tag Generator</h1>
@@ -105,7 +74,7 @@
 	}}
 />
 
-<div class="">ODER</div>
+<div class="text-xl">ODER</div>
 
 <div class="join w-full max-w-lg">
 	<input
@@ -123,28 +92,11 @@
 	</button>
 </div>
 
-<div class="divider"></div>
+<div class="divider mx-auto w-full max-w-lg"></div>
 
-<input
-	type="file"
-	accept=".png, .jpg, .jpeg"
-	bind:files={imgFiles}
-	bind:this={imgInput}
-	onchange={() => getBase64(imgFiles[0])}
-	class="hidden"
-	id="imgInput"
-/>
-<div class="join join-vertical w-full max-w-lg">
-	<input
-		type="text"
-		placeholder="Bildname (optional, Dateiendung wird automatisch ergänzt)"
-		bind:value={imgTitle}
-		class="input join-item input-bordered input-primary"
-	/>
-	<button class="btn btn-primary join-item" onclick={() => imgInput.click()}>Bild hochladen</button>
-</div>
+<a href="/img" class="btn btn-primary w-full max-w-lg">Bilderliste</a>
 
-<div class="divider"></div>
+<div class="divider mx-auto w-full max-w-lg"></div>
 
 <h3 class="text-xl">Beispieldateien</h3>
 <div class="join">

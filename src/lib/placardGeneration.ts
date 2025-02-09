@@ -1,7 +1,8 @@
 import { PDFDocument, rgb, StandardFonts, PageSizes, PDFPage, PDFFont, degrees } from 'pdf-lib';
 import type { PlacardDataRow, PlacardDataTable } from './tableSchema';
 import type { Brand } from './brands';
-import { type PageStyles, fetchUint8Array, fetchFinalImageData } from './pdfCommon';
+import { type PageStyles, fetchUint8Array, fetchFinalImageData, drawImage } from './pdfCommon';
+import { fileTypeFromBuffer } from 'file-type';
 
 const defaultStyles: PageStyles = {
 	margin: {
@@ -62,13 +63,7 @@ class PDFPlacardGenerator {
 				break;
 		}
 
-		let brandLogoImage: Uint8Array | undefined;
-
-		try {
-			brandLogoImage = await fetchUint8Array(brandLogo);
-		} catch (error) {
-			console.error('Error loading brand logo:', error);
-		}
+		const { img: brandLogoImage } = await fetchUint8Array(brandLogo);
 
 		const LOGO_DISTANCE_FROM_VERTICAL_MIDDLE = 160;
 		const LOGO_DISTANCE_FROM_HORIZONTAL_MIDDLE = 250;
@@ -117,8 +112,7 @@ class PDFPlacardGenerator {
 			console.error('Error loading brand logo:', error);
 		}
 
-		const finalImageData = await fetchFinalImageData(this.rowData);
-
+		const { img: flagImgData, type: flagImgType } = await fetchFinalImageData(this.rowData);
 		const MARGIN_FROM_MIDDLE = 20;
 		const IMG_WIDTH = 200;
 		const IMG_HEIGHT = 150;
@@ -141,12 +135,11 @@ class PDFPlacardGenerator {
 		};
 
 		try {
-			if (!finalImageData) {
+			if (!flagImgData || !flagImgType) {
 				throw new Error('Flag not found');
 			}
-
-			this.page.drawImage(await this.pdfDoc.embedPng(finalImageData), img1Pos);
-			this.page.drawImage(await this.pdfDoc.embedPng(finalImageData), img2Pos);
+			drawImage(this, flagImgData, flagImgType, img1Pos);
+			drawImage(this, flagImgData, flagImgType, img2Pos);
 		} catch (error) {
 			console.error('Error loading flag:', error);
 		}

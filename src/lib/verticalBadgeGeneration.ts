@@ -1,7 +1,13 @@
 import { PDFDocument, rgb, StandardFonts, PageSizes, PDFPage, PDFFont, degrees } from 'pdf-lib';
 import type { BadgeDataRow, BadgeDataTable } from './tableSchema';
 import type { Brand } from './brands';
-import { type PageStyles, hexToRGBColor, fetchUint8Array, fetchFinalImageData } from './pdfCommon';
+import {
+	type PageStyles,
+	hexToRGBColor,
+	fetchUint8Array,
+	fetchFinalImageData,
+	drawImage
+} from './pdfCommon';
 
 const defaultStyles: PageStyles = {
 	margin: {
@@ -68,23 +74,13 @@ class PDFVerticalBadgeGenerator {
 				break;
 		}
 
-		let brandLogoImage: Uint8Array | undefined;
-		try {
-			brandLogoImage = await fetchUint8Array(brandLogo);
-		} catch (error) {
-			console.error('Error loading brand logo:', error);
-		}
+		const { img: brandLogoImage } = await fetchUint8Array(brandLogo);
 
-		let dmunLogoImage: Uint8Array | undefined;
-		try {
-			dmunLogoImage = await fetchUint8Array('/logo/color/dmun.png');
-		} catch (error) {
-			console.error('Error loading DMUN logo:', error);
-		}
+		const { img: dmunLogoImage } = await fetchUint8Array('/logo/color/small_dmun.png');
 
 		const CENTERLINE = width / 2;
 
-		const finalImageData = await fetchFinalImageData(this.rowData);
+		const { img: flagImgData, type: flagImgType } = await fetchFinalImageData(this.rowData);
 
 		const IMG_MARGIN_BOTTOM = 40;
 		const IMG_MARGIN_SIDE = 30;
@@ -99,12 +95,10 @@ class PDFVerticalBadgeGenerator {
 		};
 
 		try {
-			if (!finalImageData) {
+			if (!flagImgData || !flagImgType) {
 				throw new Error('Flag not found');
 			}
-			this.page.drawImage(await this.pdfDoc.embedPng(finalImageData), {
-				...imgPos
-			});
+			drawImage(this, flagImgData, flagImgType, imgPos);
 		} catch (error) {
 			console.error('Error loading flag:', error);
 		}

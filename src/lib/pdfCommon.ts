@@ -19,25 +19,36 @@ export function hexToRGBColor(hex: string) {
 	return rgb(r / 255, g / 255, b / 255);
 }
 
-export async function fetchUint8Array(url: string): Promise<Uint8Array> {
+export async function fetchUint8Array(url: string): Promise<{ img: Uint8Array; type: string }> {
 	const response = await fetch(url);
 	const blob = await response.blob();
 	const arrayBuffer = await blob.arrayBuffer();
-	return new Uint8Array(arrayBuffer);
+	return { img: new Uint8Array(arrayBuffer), type: blob.type };
 }
 
 export async function fetchFinalImageData(rowData: {
 	alternativeImage?: string;
 	countryAlpha2Code?: string;
-}): Promise<Uint8Array | undefined> {
+}): Promise<{ img: Uint8Array | undefined; type: string | undefined }> {
 	try {
 		if (rowData.alternativeImage) {
-			return await fetchUint8Array(`/uploads/${rowData.alternativeImage}`);
+			if (rowData.alternativeImage.startsWith('dmun')) {
+				return await fetchUint8Array(`/logo/color/dmun.png`);
+			}
+			return await fetchUint8Array(`/api/img/${encodeURIComponent(rowData.alternativeImage)}`);
 		} else {
 			return await fetchUint8Array(`/flags/${rowData.countryAlpha2Code}.png`);
 		}
 	} catch (error) {
 		console.error('Error loading flag:', error);
-		return undefined;
+		return { img: undefined, type: undefined };
 	}
+}
+
+export async function drawImage(this_: any, img: Uint8Array, type: string, options: {}) {
+	console.log(type);
+	if (type === 'image/jpeg' || type === 'image/jpg')
+		return this_.page.drawImage(await this_.pdfDoc.embedJpg(img), options);
+	else if (type === 'image/png')
+		return this_.page.drawImage(await this_.pdfDoc.embedPng(img), options);
 }

@@ -28,7 +28,7 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata for
+      - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
@@ -47,10 +47,10 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: Dockerfile_frontend
+          file: Dockerfile
+          platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ steps.meta-frontend.outputs.tags }}
-          labels: ${{ steps.meta-frontend.outputs.labels }}
+          tags: ${{ steps.meta.outputs.tags }}
           build-args: |
-            VERSION=${{ github.event.release.tag_name }}
+            VERSION=${{ github.event.release.tag_name || github.sha }}
             SHA=${{ github.sha }}

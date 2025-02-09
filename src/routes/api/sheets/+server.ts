@@ -35,6 +35,7 @@ export const GET: RequestHandler = async ({ url }) => {
 
 		return json(table);
 	} catch (error) {
+		console.error('Error when fetching from google sheets: ' + error);
 		return new Response((error as any).message, { status: 500 });
 	}
 };

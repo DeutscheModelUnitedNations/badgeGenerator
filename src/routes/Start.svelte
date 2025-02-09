@@ -30,12 +30,21 @@
 
 			const spreadsheetId = match[1];
 			const response = await fetch(`/api/sheets?id=${spreadsheetId}`);
+
+			// Handle non-OK responses using text if JSON parsing fails.
+			if (!response.ok) {
+				const errorText = await response.text();
+				console.error(response.status, errorText);
+				throw new Error(errorText || 'Error fetching Google Sheet.');
+			}
+
 			const data = await response.json();
-			if (data.error) throw new Error(data.message);
 			setFileData(data);
 		} catch (error) {
 			console.error('Error fetching sheet:', error);
-			alert(`Error fetching Google Sheet:\n${error}`);
+			let message = 'Error fetching Google Sheet.';
+			if (error instanceof Error) message = error.message;
+			alert(`Error fetching Google Sheet:\n${message}`);
 		} finally {
 			loading = false;
 		}

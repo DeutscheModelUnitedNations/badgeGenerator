@@ -3,7 +3,8 @@
 	import { type PageData } from './$types';
 	import { invalidateAll } from '$app/navigation';
 
-	let { images }: PageData = $props();
+	let { data }: { data: PageData } = $props();
+	let images = $derived(data.images);
 
 	function copyToClipboard(title: string) {
 		navigator.clipboard.writeText(title).catch((err) => {

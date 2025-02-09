@@ -52,3 +52,27 @@ export async function drawImage(this_: any, img: Uint8Array, type: string, optio
 	else if (type === 'image/png')
 		return this_.page.drawImage(await this_.pdfDoc.embedPng(img), options);
 }
+
+export function getBrandInfo(brand: string) {
+	// For color badges
+	let brandLogo: string;
+	let primaryColor: string;
+	let conferenceName: string;
+	switch (brand) {
+		case 'MUN-SH':
+			brandLogo = '/logo/color/mun-sh.png';
+			primaryColor = '#0089E3';
+			conferenceName = `Schleswig-Holstein ${new Date().getFullYear()}`;
+			break;
+		case 'MUNBW':
+			brandLogo = '/logo/color/munbw.png';
+			primaryColor = '#0C4695';
+			conferenceName = `Baden-Württemberg ${new Date().getFullYear()}`;
+			break;
+		default:
+			brandLogo = '';
+			primaryColor = '#000000';
+			conferenceName = '';
+	}
+	return { brandLogo, primaryColor, conferenceName };
+}

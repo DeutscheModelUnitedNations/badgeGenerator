@@ -1,21 +1,20 @@
 <script lang="ts">
-	import { placardSchema, type PlacardDataTable } from '$lib/tableSchema';
-	import { generateCompletePDF } from '$lib/placardGeneration';
-	import type { Brand } from '$lib/brands';
-
 	interface Props {
-		fileData: PlacardDataTable;
-		brand: Brand;
+		fileData: any;
+		brand: any;
+		generatePDF: (fileData: any, brand: any) => Promise<Uint8Array>;
+		schema: any;
+		downloadFilename: string;
 	}
+	const { fileData, brand, generatePDF, schema, downloadFilename }: Props = $props();
 
-	let { fileData, brand }: Props = $props();
 	let validationFailed = $state(false);
 	let pdfUrl = $state('');
 	let loading = $state(true);
 
 	async function generatePreview() {
 		try {
-			const pdfBytes = await generateCompletePDF(fileData, brand);
+			const pdfBytes = await generatePDF(fileData, brand);
 			const blob = new Blob([pdfBytes], { type: 'application/pdf' });
 			pdfUrl = URL.createObjectURL(blob);
 		} catch (error) {
@@ -27,7 +26,7 @@
 
 	$effect(() => {
 		loading = true;
-		const { success } = placardSchema.safeParse(fileData);
+		const { success } = schema.safeParse(fileData);
 		if (!success) {
 			validationFailed = true;
 			return;
@@ -42,25 +41,19 @@
 
 <div class="flex w-full flex-col gap-4">
 	{#if validationFailed}
-		<div class="alert alert-error">
-			The provided data is invalid for this type. Please select the appropriate type and check the
-			input file.
+		<div class="alert alert-error">Data is invalid. Please check the input file.</div>
+	{:else if loading}
+		<div class="flex justify-center">
+			<span class="loading loading-dots loading-lg text-primary"></span>
 		</div>
 	{:else}
-		{#if loading}
-			<div class="flex h-[800px] items-center justify-center">
-				<span class="loading loading-spinner loading-lg text-primary"></span>
-			</div>
-		{:else}
-			<embed src={pdfUrl} type="application/pdf" class="h-[800px] w-full rounded-lg bg-white" />
-		{/if}
-
+		<embed src={pdfUrl} type="application/pdf" class=" h-[80vh] w-full rounded-lg bg-white" />
 		<button
 			class="btn btn-primary"
 			onclick={() => {
 				const link = document.createElement('a');
 				link.href = pdfUrl;
-				link.download = 'placards.pdf';
+				link.download = downloadFilename;
 				link.click();
 			}}
 		>

@@ -5,7 +5,8 @@ import {
 	type PageStyles,
 	fetchUint8Array,
 	fetchFinalImageData,
-	drawImage
+	drawImage,
+	getBrandInfo
 } from './pdfCommon';
 
 const defaultStyles: PageStyles = {
@@ -55,23 +56,9 @@ class PDFVerticalBadgeGenerator {
 
 	async generateContent(): Promise<void> {
 		const { width, height } = this.page.getSize();
-
-		let brandLogo;
-		let primaryColor;
-		let conferenceName;
-
-		switch (this.brand) {
-			case 'MUN-SH':
-				brandLogo = '/logo/color/mun-sh.png';
-				primaryColor = '#0089E3';
-				conferenceName = `Schleswig-Holstein ${new Date().getFullYear()}`;
-				break;
-			case 'MUNBW':
-				brandLogo = '/logo/color/munbw.png';
-				primaryColor = '#0C4695';
-				conferenceName = `Baden-Württemberg ${new Date().getFullYear()}`;
-				break;
-		}
+		
+		// Replace duplicated code with a helper function
+		const { brandLogo, primaryColor, conferenceName } = getBrandInfo(this.brand);
 
 		const { img: brandLogoImage } = await fetchUint8Array(brandLogo);
 
@@ -97,7 +84,7 @@ class PDFVerticalBadgeGenerator {
 			if (!flagImgData || !flagImgType) {
 				throw new Error('Flag not found');
 			}
-			drawImage(this, flagImgData, flagImgType, imgPos);
+			await drawImage(this, flagImgData, flagImgType, imgPos);
 		} catch (error) {
 			console.error('Error loading flag:', error);
 		}
@@ -105,7 +92,7 @@ class PDFVerticalBadgeGenerator {
 		this.page.drawRectangle({
 			...imgPos,
 			borderColor: rgb(0, 0, 0),
-			borderWidth: 1
+			borderWidth: 0.5
 		});
 
 		const LOGO_IMG_WIDTH = 60;
@@ -185,7 +172,7 @@ class PDFVerticalBadgeGenerator {
 	}
 }
 
-export async function generateCompletePDF(
+export async function generateVerticalBadgePDF(
 	fileData: BadgeDataTable,
 	brand: Brand
 ): Promise<Uint8Array> {

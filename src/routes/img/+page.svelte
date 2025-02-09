@@ -37,8 +37,8 @@
 			referenzieren, indem du in der Spalte "alternativeImage" den Namen angibts (ohne Dateiendung).
 		</p>
 		<p>
-			Es können nur Bilder im Format <strong>.jpg, .jpeg, .png und .svg</strong> hochgeladen werden und
-			müssen im <strong>Format 4x3</strong> sein – andernfalls werden sie ohne verzerrung zugeschnitten.
+			Es können nur Bilder im Format <strong>.jpg, .jpeg, .png und .svg</strong> hochgeladen werden
+			und müssen im <strong>Format 4x3</strong> sein – andernfalls werden sie ohne verzerrung zugeschnitten.
 		</p>
 	</div>
 </div>
@@ -53,18 +53,18 @@
 	<table class="table w-full max-w-2xl">
 		<thead>
 			<tr>
-				<th class="w-full">Name</th>
 				<th>Vorschau</th>
+				<th class="w-full">Name</th>
 				<th></th>
 			</tr>
 		</thead>
 		<tbody>
 			{#each images as image}
 				<tr class="transition-all duration-200 hover:bg-gray-100">
-					<td>{image.title}</td>
 					<td>
 						<img src={`${image.url}?preview`} alt={image.title} />
 					</td>
+					<td>{image.title}</td>
 					<td class="flex gap-2">
 						<button class="btn btn-primary btn-sm" onclick={() => copyToClipboard(image.title)}
 							>Kopieren</button

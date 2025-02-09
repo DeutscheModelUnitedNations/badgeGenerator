@@ -137,8 +137,8 @@ class PDFPlacardGenerator {
 			if (!flagImgData || !flagImgType) {
 				throw new Error('Flag not found');
 			}
-			drawImage(this, flagImgData, flagImgType, img1Pos);
-			drawImage(this, flagImgData, flagImgType, img2Pos);
+			await drawImage(this, flagImgData, flagImgType, img1Pos);
+			await drawImage(this, flagImgData, flagImgType, img2Pos);
 		} catch (error) {
 			console.error('Error loading flag:', error);
 		}
@@ -206,7 +206,7 @@ class PDFPlacardGenerator {
 	}
 }
 
-export async function generateCompletePDF(
+export async function generatePlacardPDF(
 	fileData: PlacardDataTable,
 	brand: Brand
 ): Promise<Uint8Array> {

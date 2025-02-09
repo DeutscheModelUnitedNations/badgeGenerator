@@ -4,6 +4,8 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	const db = locals.db;
 
 	try {
+		console.info('POST /api/img');
+
 		// Read binary data directly from request body
 		const arrayBuffer = await request.arrayBuffer();
 		const uint8Array = new Uint8Array(arrayBuffer);
@@ -24,13 +26,15 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			return new Response('File too large', { status: 413 });
 		}
 
+		console.log('Saving image:', title, extension, uint8Array.length);
+
 		await new Promise<void>((resolve, reject) => {
 			db.run(
 				`INSERT OR REPLACE INTO image (title, extension, image) 
                  VALUES (?, ?, ?)`,
 				[title, extension, uint8Array],
 				(err: Error) => {
-					if (err) reject(err);
+					if (err) throw err;
 					else resolve();
 				}
 			);

@@ -1,11 +1,16 @@
 import { PDFDocument, rgb, StandardFonts, PageSizes, PDFPage, PDFFont, degrees } from 'pdf-lib';
 import type { TableRow, TableSchema } from './tableSchema';
-import type { Brand } from './brands';
-import { type PageStyles, fetchUint8Array, fetchFinalImageData, drawImage } from './pdfCommon';
+import type { Brand } from './types';
 import {
-	resetGenerationProgress,
-	setGenerationProgress
-} from '$lib/stores/progress.svelte';
+	type PageStyles,
+	fetchUint8Array,
+	fetchFinalImageData,
+	drawImage,
+	widthOfTextAtSize,
+	drawText
+} from './pdfCommon';
+import { resetGenerationProgress, setGenerationProgress } from '$lib/stores/progress.svelte';
+import { addWarning, WarningType } from './stores/warnings.svelte';
 
 const defaultStyles: PageStyles = {
 	margin: {
@@ -37,12 +42,20 @@ class PDFPlacardGenerator {
 	helveticaBold!: PDFFont;
 	rowData!: TableRow;
 	brand!: Brand;
+	rowNumber!: number;
 
-	constructor(pdfDoc: PDFDocument, styles = defaultStyles, rowData: TableRow, brand: Brand) {
+	constructor(
+		pdfDoc: PDFDocument,
+		styles = defaultStyles,
+		rowData: TableRow,
+		brand: Brand,
+		rowNumber: number
+	) {
 		this.pdfDoc = pdfDoc;
 		this.styles = styles;
 		this.rowData = rowData;
 		this.brand = brand;
+		this.rowNumber = rowNumber;
 	}
 
 	protected async initialize(): Promise<void> {
@@ -115,7 +128,10 @@ class PDFPlacardGenerator {
 			console.error('Error loading brand logo:', error);
 		}
 
-		const { img: flagImgData, type: flagImgType } = await fetchFinalImageData(this.rowData);
+		const { img: flagImgData, type: flagImgType } = await fetchFinalImageData(this.rowData, [
+			`${this.rowNumber}`,
+			this.rowData.alternativeImage ? 'alternativeImage' : 'countryAlpha2Code'
+		]);
 		const MARGIN_FROM_MIDDLE = 20;
 		const IMG_WIDTH = 200;
 		const IMG_HEIGHT = 150;
@@ -144,7 +160,15 @@ class PDFPlacardGenerator {
 			await drawImage(this, flagImgData, flagImgType, img1Pos);
 			await drawImage(this, flagImgData, flagImgType, img2Pos);
 		} catch (error) {
-			console.error('Error loading flag:', error);
+			console.warn('Error loading flag:', error);
+			addWarning({
+				type: WarningType.IMAGE,
+				message: 'Flagge / Bild konnte nicht geladen werden. Ist das Bild verfügbar?',
+				path: [
+					`${this.rowNumber}`,
+					this.rowData.alternativeImage ? 'alternativeImage' : 'countryAlpha2Code'
+				]
+			});
 		}
 
 		this.page.drawRectangle({
@@ -162,38 +186,74 @@ class PDFPlacardGenerator {
 			? `${this.rowData.name} (${this.rowData.committee})`
 			: this.rowData.name;
 		const NAME_DISTANCE_FROM_MIDDLE = 270;
-		this.page.setFont(this.helvetica);
-		this.page.drawText(nameText, {
-			x: width / 2 - this.helvetica.widthOfTextAtSize(nameText, this.styles.fontSize.heading) / 2,
-			y: height / 2 - NAME_DISTANCE_FROM_MIDDLE,
-			size: this.styles.fontSize.heading
-		});
-		this.page.drawText(nameText, {
-			x: width / 2 + this.helvetica.widthOfTextAtSize(nameText, this.styles.fontSize.heading) / 2,
-			y: height / 2 + NAME_DISTANCE_FROM_MIDDLE,
-			size: this.styles.fontSize.heading,
-			rotate: degrees(180)
-		});
+		drawText(
+			this,
+			this.helvetica,
+			nameText,
+			{
+				x:
+					width / 2 -
+					widthOfTextAtSize(this, this.helvetica, nameText, this.styles.fontSize.heading) / 2,
+				y: height / 2 - NAME_DISTANCE_FROM_MIDDLE,
+				size: this.styles.fontSize.heading
+			},
+			[`${this.rowNumber}`, 'name']
+		);
+		drawText(
+			this,
+			this.helvetica,
+			nameText,
+			{
+				x:
+					width / 2 +
+					widthOfTextAtSize(this, this.helvetica, nameText, this.styles.fontSize.heading) / 2,
+				y: height / 2 + NAME_DISTANCE_FROM_MIDDLE,
+				size: this.styles.fontSize.heading,
+				rotate: degrees(180)
+			},
+			[`${this.rowNumber}`, 'name']
+		);
 
 		const TITLE_DISTANCE_FROM_MIDDLE = 225;
-		this.page.setFont(this.helveticaBold);
-		this.page.drawText(this.rowData.countryName, {
-			x:
-				width / 2 -
-				this.helveticaBold.widthOfTextAtSize(this.rowData.countryName, this.styles.fontSize.title) /
-					2,
-			y: height / 2 - TITLE_DISTANCE_FROM_MIDDLE,
-			size: this.styles.fontSize.title
-		});
-		this.page.drawText(this.rowData.countryName, {
-			x:
-				width / 2 +
-				this.helveticaBold.widthOfTextAtSize(this.rowData.countryName, this.styles.fontSize.title) /
-					2,
-			y: height / 2 + TITLE_DISTANCE_FROM_MIDDLE,
-			size: this.styles.fontSize.title,
-			rotate: degrees(180)
-		});
+		drawText(
+			this,
+			this.helveticaBold,
+			this.rowData.countryName,
+			{
+				x:
+					width / 2 -
+					widthOfTextAtSize(
+						this,
+						this.helveticaBold,
+						this.rowData.countryName,
+						this.styles.fontSize.title
+					) /
+						2,
+				y: height / 2 - TITLE_DISTANCE_FROM_MIDDLE,
+				size: this.styles.fontSize.title
+			},
+			[`${this.rowNumber}`, 'countryName']
+		);
+		drawText(
+			this,
+			this.helveticaBold,
+			this.rowData.countryName,
+			{
+				x:
+					width / 2 +
+					widthOfTextAtSize(
+						this,
+						this.helveticaBold,
+						this.rowData.countryName,
+						this.styles.fontSize.title
+					) /
+						2,
+				y: height / 2 + TITLE_DISTANCE_FROM_MIDDLE,
+				size: this.styles.fontSize.title,
+				rotate: degrees(180)
+			},
+			[`${this.rowNumber}`, 'countryName']
+		);
 
 		this.page.drawLine({
 			start: { x: 0, y: height / 2 },
@@ -210,15 +270,12 @@ class PDFPlacardGenerator {
 	}
 }
 
-export async function generatePlacardPDF(
-	fileData: TableSchema,
-	brand: Brand
-): Promise<Uint8Array> {
+export async function generatePlacardPDF(fileData: TableSchema, brand: Brand): Promise<Uint8Array> {
 	try {
 		const pdfDoc = await PDFDocument.create();
 
 		const pageGenerators = fileData.map(
-			(row) => new PDFPlacardGenerator(pdfDoc, defaultStyles, row, brand)
+			(row, i) => new PDFPlacardGenerator(pdfDoc, defaultStyles, row, brand, i)
 		);
 		for (let i = 0; i < pageGenerators.length; i++) {
 			await pageGenerators[i].generate();

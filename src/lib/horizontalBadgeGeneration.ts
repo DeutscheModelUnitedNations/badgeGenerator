@@ -7,9 +7,12 @@ import {
 	fetchUint8Array,
 	fetchFinalImageData,
 	drawImage,
-	getBrandInfo
+	getBrandInfo,
+	drawText,
+	widthOfTextAtSize
 } from './pdfCommon';
 import { setGenerationProgress } from './stores/progress.svelte';
+import { addWarning, WarningType } from './stores/warnings.svelte';
 
 const defaultStyles: PageStyles = {
 	margin: {
@@ -41,12 +44,20 @@ class PDFHorizontalBadgeGenerator {
 	helveticaBold!: PDFFont;
 	rowData!: TableRow;
 	brand!: Brand;
+	rowNumber!: number;
 
-	constructor(pdfDoc: PDFDocument, styles = defaultStyles, rowData: TableRow, brand: Brand) {
+	constructor(
+		pdfDoc: PDFDocument,
+		styles = defaultStyles,
+		rowData: TableRow,
+		brand: Brand,
+		rowNumber: number
+	) {
 		this.pdfDoc = pdfDoc;
 		this.styles = styles;
 		this.rowData = rowData;
 		this.brand = brand;
+		this.rowNumber = rowNumber;
 	}
 
 	protected async initialize(): Promise<void> {
@@ -64,7 +75,10 @@ class PDFHorizontalBadgeGenerator {
 
 		const { img: brandLogoImage } = await fetchUint8Array(brandLogo);
 
-		const { img: flagImg, type: flagType } = await fetchFinalImageData(this.rowData);
+		const { img: flagImg, type: flagType } = await fetchFinalImageData(this.rowData, [
+			`${this.rowNumber}`,
+			this.rowData.alternativeImage ? 'alternativeImage' : 'countryAlpha2Code'
+		]);
 
 		const IMG_MARGIN_BOTTOM = 16;
 		const IMG_MARGIN_LEFT = 20;
@@ -85,6 +99,14 @@ class PDFHorizontalBadgeGenerator {
 			await drawImage(this, flagImg, flagType, imgPos);
 		} catch (error) {
 			console.error('Error loading flag:', error);
+			addWarning({
+				type: WarningType.IMAGE,
+				message: 'Flagge / Bild konnte nicht geladen werden.',
+				path: [
+					`${this.rowNumber}`,
+					this.rowData.alternativeImage ? 'alternativeImage' : 'countryAlpha2Code'
+				]
+			});
 		}
 
 		this.page.drawRectangle({
@@ -131,26 +153,44 @@ class PDFHorizontalBadgeGenerator {
 		});
 
 		const TITLE_MARGIN_TOP = 25;
-		this.page.setFont(this.helveticaBold);
-		this.page.drawText(this.rowData.countryName, {
-			x:
-				width / 2 -
-				this.helveticaBold.widthOfTextAtSize(this.rowData.countryName, this.styles.fontSize.title) /
-					2,
-			y: height - TITLE_MARGIN_TOP,
-			size: this.styles.fontSize.title
-		});
+		drawText(
+			this,
+			this.helveticaBold,
+			this.rowData.countryName,
+			{
+				x:
+					width / 2 -
+					widthOfTextAtSize(
+						this,
+						this.helveticaBold,
+						this.rowData.countryName,
+						this.styles.fontSize.title
+					) /
+						2,
+				y: height - TITLE_MARGIN_TOP,
+				size: this.styles.fontSize.title
+			},
+			[`${this.rowNumber}`, 'countryName']
+		);
 
 		const NAME_MARGIN_TOP = 40;
 		const nameText = this.rowData.committee
 			? `${this.rowData.name} (${this.rowData.committee})`
 			: this.rowData.name;
-		this.page.setFont(this.helvetica);
-		this.page.drawText(nameText, {
-			x: width / 2 - this.helvetica.widthOfTextAtSize(nameText, this.styles.fontSize.heading) / 2,
-			y: height - NAME_MARGIN_TOP,
-			size: this.styles.fontSize.heading
-		});
+
+		drawText(
+			this,
+			this.helvetica,
+			nameText,
+			{
+				x:
+					width / 2 -
+					widthOfTextAtSize(this, this.helvetica, nameText, this.styles.fontSize.heading) / 2,
+				y: height - NAME_MARGIN_TOP,
+				size: this.styles.fontSize.heading
+			},
+			[`${this.rowNumber}`, 'name']
+		);
 
 		const PRONOUNS_MARGIN_TOP = 52;
 		if (this.rowData.pronouns) {
@@ -188,7 +228,7 @@ export async function generateHorizontalBadgePDF(
 
 	// Create base pages
 	const pageGenerators = fileData.map(
-		(row) => new PDFHorizontalBadgeGenerator(pdfDoc, defaultStyles, row, brand)
+		(row, i) => new PDFHorizontalBadgeGenerator(pdfDoc, defaultStyles, row, brand, i)
 	);
 	// Generate all pages
 	for (let i = 0; i < pageGenerators.length; i++) {

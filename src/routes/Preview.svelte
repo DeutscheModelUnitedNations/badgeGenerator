@@ -4,6 +4,7 @@
 	import PDFPreviewer from '$lib/components/PDFPreviewer.svelte';
 	import type { PDFType } from '$lib/types';
 	import type { TableSchema } from '$lib/tableSchema';
+	import { getWarnings } from '$lib/stores/warnings.svelte';
 
 	interface Props {
 		fileData: TableSchema | undefined;

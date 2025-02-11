@@ -5,6 +5,8 @@ import { generatePlacardPDF } from './placardGeneration';
 import { generateVerticalBadgePDF } from './verticalBadgeGeneration';
 import { generateHorizontalBadgePDF } from './horizontalBadgeGeneration';
 import { resetGenerationProgress } from './stores/progress.svelte';
+import { addWarning, resetWarnings, WarningType } from './stores/warnings.svelte';
+import replaceSpecialChars from 'replace-special-characters';
 
 export interface PageStyles {
 	margin: { left: number; right: number; top: number; bottom: number };
@@ -27,15 +29,19 @@ export function hexToRGBColor(hex: string) {
 
 export async function fetchUint8Array(url: string): Promise<{ img: Uint8Array; type: string }> {
 	const response = await fetch(url);
+	if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
 	const blob = await response.blob();
 	const arrayBuffer = await blob.arrayBuffer();
 	return { img: new Uint8Array(arrayBuffer), type: blob.type };
 }
 
-export async function fetchFinalImageData(rowData: {
-	alternativeImage?: string;
-	countryAlpha2Code?: string;
-}): Promise<{ img: Uint8Array | undefined; type: string | undefined }> {
+export async function fetchFinalImageData(
+	rowData: {
+		alternativeImage?: string;
+		countryAlpha2Code?: string;
+	},
+	path: string[]
+): Promise<{ img: Uint8Array | undefined; type: string | undefined }> {
 	try {
 		if (rowData.alternativeImage) {
 			if (rowData.alternativeImage.startsWith('dmun')) {
@@ -45,18 +51,54 @@ export async function fetchFinalImageData(rowData: {
 		} else {
 			return await fetchUint8Array(`/flags/${rowData.countryAlpha2Code?.toLowerCase()}.png`);
 		}
-	} catch (error) {
-		console.error('Error loading flag:', error);
+	} catch (error: any) {
+		console.error(error);
 		return { img: undefined, type: undefined };
 	}
 }
 
 export async function drawImage(this_: any, img: Uint8Array, type: string, options: {}) {
-	console.log(type);
 	if (type === 'image/jpeg' || type === 'image/jpg')
 		return this_.page.drawImage(await this_.pdfDoc.embedJpg(img), options);
 	else if (type === 'image/png')
 		return this_.page.drawImage(await this_.pdfDoc.embedPng(img), options);
+}
+
+export function drawText(this_: any, font: any, text: string, options: any, path: string[]) {
+	this_.page.setFont(font);
+	const { width: pageWidth } = this_.page.getSize();
+	const textWidth = widthOfTextAtSize(this_, font, text, options.size);
+	if (pageWidth - 10 < textWidth) {
+		addWarning({
+			type: WarningType.SUPERSET,
+			message: 'Text überschreitet eventuell die Seitenränder.',
+			details: text,
+			path
+		});
+	}
+	try {
+		this_.page.drawText(text, options);
+	} catch (error: any) {
+		console.log(error);
+		addWarning({
+			type: WarningType.TEXT,
+			message: 'Text enthält unzulässige Zeichen und wurde bereinigt.',
+			details: error?.message,
+			path
+		});
+		const sanitizedText = replaceSpecialChars(text);
+		this_.page.drawText(sanitizedText, options);
+	}
+}
+
+export function widthOfTextAtSize(this_: any, font: any, text: string, size: number) {
+	try {
+		return font.widthOfTextAtSize(text, size);
+	} catch (error: any) {
+		console.log(error.message);
+		const sanitizedText = replaceSpecialChars(text);
+		return font.widthOfTextAtSize(sanitizedText, size);
+	}
 }
 
 export function getBrandInfo(brand: Brand) {
@@ -85,6 +127,7 @@ export function getBrandInfo(brand: Brand) {
 
 export async function generatePDF(fileData: TableSchema, brand: Brand, type: PDFType) {
 	resetGenerationProgress(fileData.length);
+	resetWarnings();
 
 	switch (type) {
 		case 'PLACARD':

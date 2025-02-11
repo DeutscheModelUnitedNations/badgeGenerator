@@ -1,4 +1,6 @@
 <script lang="ts">
+	import WarningTable from './WarningTable.svelte';
+
 	import { generatePDF } from '$lib/pdfCommon';
 	import {
 		getGenerationProgressPercent,
@@ -7,6 +9,7 @@
 	import { tableSchema, type TableRow } from '$lib/tableSchema';
 	import type { Brand, PDFType } from '$lib/types';
 	import type { SafeParseError } from 'zod';
+	import { getWarnings } from '$lib/stores/warnings.svelte';
 
 	interface Props {
 		fileData: any;
@@ -64,37 +67,10 @@
 	{#if validationFailed && validationFailed.length > 0}
 		<div class="alert alert-warning !flex w-auto !flex-col !items-center !justify-center">
 			<div class="text-center">
-				<strong>Datenvalidierung Fehlgeschlagen</strong><br />Die Datei enthält Fehler, die das Erstellen des PDFs verhindern. Bitte korrigiere die Fehler und versuche es erneut.
+				<strong>Datenvalidierung Fehlgeschlagen</strong><br />Die Datei enthält Fehler, die das
+				Erstellen des PDFs verhindern. Bitte korrigiere die Fehler und versuche es erneut.
 			</div>
-			<div class="w-full rounded-lg bg-base-100 p-4 shadow-sm overflow-auto">
-				<table class="table overflow-auto">
-					<thead>
-						<tr>
-							<th>
-								<div class="badge badge-error mr-1">Zeile</div>
-								<div class="badge badge-neutral">Spalte</div>
-							</th>
-							<th>Warnung</th>
-						</tr>
-					</thead>
-					<tbody>
-						{#each validationFailed as error}
-							{@const path = error.path}
-							<tr>
-								<td class="flex gap-1">
-									<div class="badge badge-error">
-										{(typeof path[0] === 'string' ? parseInt(path[0]) : path[0]) + 2}
-									</div>
-									{#each path.slice(1) as p}
-										<div class="badge badge-neutral">{p}</div>
-									{/each}
-								</td>
-								<td class="text-base-content">{@html error.message}</td>
-							</tr>
-						{/each}
-					</tbody>
-				</table>
-			</div>
+			<WarningTable errors={validationFailed} />
 		</div>
 	{:else if loading}
 		<div class="flex flex-col items-center justify-center gap-2">
@@ -149,6 +125,13 @@
 			</div>
 		</div>
 	{:else}
+		<div class="alert alert-warning !flex w-auto !flex-col !items-center !justify-center">
+			<div class="text-center">
+				<strong>Warnungen</strong><br />Bei der PDF-Erstellung sind ein paar Warnungen aufgetreten.
+				Bitte prüfe sie gründlich.
+			</div>
+			<WarningTable errors={getWarnings()} />
+		</div>
 		<button
 			class="btn btn-primary w-full max-w-lg"
 			onclick={() => {

@@ -4,6 +4,7 @@ import type { TableSchema } from './tableSchema';
 import { generatePlacardPDF } from './placardGeneration';
 import { generateVerticalBadgePDF } from './verticalBadgeGeneration';
 import { generateHorizontalBadgePDF } from './horizontalBadgeGeneration';
+import { resetGenerationProgress } from './stores/progress.svelte';
 
 export interface PageStyles {
 	margin: { left: number; right: number; top: number; bottom: number };
@@ -83,6 +84,8 @@ export function getBrandInfo(brand: Brand) {
 }
 
 export async function generatePDF(fileData: TableSchema, brand: Brand, type: PDFType) {
+	resetGenerationProgress(fileData.length);
+
 	switch (type) {
 		case 'PLACARD':
 			return await generatePlacardPDF(fileData, brand);

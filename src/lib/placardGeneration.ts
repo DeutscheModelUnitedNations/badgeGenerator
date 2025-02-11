@@ -215,7 +215,6 @@ export async function generatePlacardPDF(
 	brand: Brand
 ): Promise<Uint8Array> {
 	try {
-		resetGenerationProgress(fileData.length);
 		const pdfDoc = await PDFDocument.create();
 
 		const pageGenerators = fileData.map(

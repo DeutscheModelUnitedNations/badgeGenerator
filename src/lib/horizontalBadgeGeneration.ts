@@ -9,6 +9,7 @@ import {
 	drawImage,
 	getBrandInfo
 } from './pdfCommon';
+import { setGenerationProgress } from './stores/progress.svelte';
 
 const defaultStyles: PageStyles = {
 	margin: {
@@ -89,7 +90,7 @@ class PDFHorizontalBadgeGenerator {
 		this.page.drawRectangle({
 			...imgPos,
 			borderColor: rgb(0, 0, 0),
-			borderWidth: 0.5,
+			borderWidth: 0.5
 		});
 
 		const LOGO_SCALE = 0.8;
@@ -190,8 +191,9 @@ export async function generateHorizontalBadgePDF(
 		(row) => new PDFHorizontalBadgeGenerator(pdfDoc, defaultStyles, row, brand)
 	);
 	// Generate all pages
-	for (const generator of pageGenerators) {
-		await generator.generate();
+	for (let i = 0; i < pageGenerators.length; i++) {
+		await pageGenerators[i].generate();
+		setGenerationProgress(fileData.length, i + 1);
 	}
 
 	return pdfDoc.save();

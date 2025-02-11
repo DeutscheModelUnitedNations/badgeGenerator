@@ -8,6 +8,7 @@ import {
 	drawImage,
 	getBrandInfo
 } from './pdfCommon';
+import { setGenerationProgress } from './stores/progress.svelte';
 
 const defaultStyles: PageStyles = {
 	margin: {
@@ -56,7 +57,7 @@ class PDFVerticalBadgeGenerator {
 
 	async generateContent(): Promise<void> {
 		const { width, height } = this.page.getSize();
-		
+
 		// Replace duplicated code with a helper function
 		const { brandLogo, primaryColor, conferenceName } = getBrandInfo(this.brand);
 
@@ -183,8 +184,9 @@ export async function generateVerticalBadgePDF(
 		(row) => new PDFVerticalBadgeGenerator(pdfDoc, defaultStyles, row, brand)
 	);
 	// Generate all pages
-	for (const generator of pageGenerators) {
-		await generator.generate();
+	for (let i = 0; i < pageGenerators.length; i++) {
+		await pageGenerators[i].generate();
+		setGenerationProgress(fileData.length, i + 1);
 	}
 
 	return pdfDoc.save();

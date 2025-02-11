@@ -23,7 +23,7 @@ export const rowSchema = z
 					)
 						return true;
 					if (value?.toLocaleLowerCase() === 'un') return true;
-					if (value === '') return true;
+					if (value === '' || value === undefined) return true;
 					return false;
 				},
 				{
@@ -35,18 +35,12 @@ export const rowSchema = z
 		alternativeImage: z.string().optional(),
 		pronouns: z.string().optional()
 	})
-	.refine(
-		(data) => data.countryAlpha2Code || data.alternativeImage,
-		(data) => ({
-			message: `Entweder <span class="badge badge-neutral">countryAlpha2Code</span> oder <span class="badge badge-neutral">alternativeImage</span> muss einen Wert enthalten`
-		})
-	)
-	.refine(
-		(data) => !(data.countryAlpha2Code && data.alternativeImage),
-		(data) => ({
-			message: `<span class="badge badge-neutral">countryAlpha2Code</span> und <span class="badge badge-neutral">alternativeImage</span> dürfen nicht gleichzeitig einen Wert enthalten`
-		})
-	);
+	.refine((data) => data.countryAlpha2Code || data.alternativeImage, {
+		message: `Entweder <span class="badge badge-neutral">countryAlpha2Code</span> oder <span class="badge badge-neutral">alternativeImage</span> muss einen Wert enthalten`
+	})
+	.refine((data) => !(data.countryAlpha2Code && data.alternativeImage), {
+		message: `<span class="badge badge-neutral">countryAlpha2Code</span> und <span class="badge badge-neutral">alternativeImage</span> dürfen nicht gleichzeitig einen Wert enthalten`
+	});
 
 export const tableSchema = z.array(rowSchema);
 

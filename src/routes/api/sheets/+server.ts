@@ -18,7 +18,6 @@ export const GET: RequestHandler = async ({ url }) => {
 		}
 
 		console.info('Fetching from google sheets:', spreadsheetId);
-		console.info('API Key: ' + env.GOOGLE_API_KEY ? 'Set' : 'Missing');
 
 		const response = await sheets.spreadsheets.values.get({
 			auth,

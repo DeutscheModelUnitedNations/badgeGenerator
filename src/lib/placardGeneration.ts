@@ -2,6 +2,10 @@ import { PDFDocument, rgb, StandardFonts, PageSizes, PDFPage, PDFFont, degrees }
 import type { PlacardDataRow, PlacardDataTable } from './tableSchema';
 import type { Brand } from './brands';
 import { type PageStyles, fetchUint8Array, fetchFinalImageData, drawImage } from './pdfCommon';
+import {
+	resetGenerationProgress,
+	setGenerationProgress
+} from '$lib/stores/progress.svelte';
 
 const defaultStyles: PageStyles = {
 	margin: {
@@ -210,16 +214,21 @@ export async function generatePlacardPDF(
 	fileData: PlacardDataTable,
 	brand: Brand
 ): Promise<Uint8Array> {
-	const pdfDoc = await PDFDocument.create();
+	try {
+		resetGenerationProgress(fileData.length);
+		const pdfDoc = await PDFDocument.create();
 
-	// Create base pages
-	const pageGenerators = fileData.map(
-		(row) => new PDFPlacardGenerator(pdfDoc, defaultStyles, row, brand)
-	);
-	// Generate all pages
-	for (const generator of pageGenerators) {
-		await generator.generate();
+		const pageGenerators = fileData.map(
+			(row) => new PDFPlacardGenerator(pdfDoc, defaultStyles, row, brand)
+		);
+		for (let i = 0; i < pageGenerators.length; i++) {
+			await pageGenerators[i].generate();
+			setGenerationProgress(fileData.length, i + 1);
+		}
+
+		return pdfDoc.save();
+	} catch (error) {
+		console.error('Error generating placard PDF:', error);
+		throw error;
 	}
-
-	return pdfDoc.save();
 }

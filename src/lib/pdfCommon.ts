@@ -1,4 +1,9 @@
 import { rgb } from 'pdf-lib';
+import type { Brand, PDFType } from './types';
+import type { TableSchema } from './tableSchema';
+import { generatePlacardPDF } from './placardGeneration';
+import { generateVerticalBadgePDF } from './verticalBadgeGeneration';
+import { generateHorizontalBadgePDF } from './horizontalBadgeGeneration';
 
 export interface PageStyles {
 	margin: { left: number; right: number; top: number; bottom: number };
@@ -37,7 +42,7 @@ export async function fetchFinalImageData(rowData: {
 			}
 			return await fetchUint8Array(`/api/img/${encodeURIComponent(rowData.alternativeImage)}`);
 		} else {
-			return await fetchUint8Array(`/flags/${rowData.countryAlpha2Code}.png`);
+			return await fetchUint8Array(`/flags/${rowData.countryAlpha2Code?.toLowerCase()}.png`);
 		}
 	} catch (error) {
 		console.error('Error loading flag:', error);
@@ -53,7 +58,7 @@ export async function drawImage(this_: any, img: Uint8Array, type: string, optio
 		return this_.page.drawImage(await this_.pdfDoc.embedPng(img), options);
 }
 
-export function getBrandInfo(brand: string) {
+export function getBrandInfo(brand: Brand) {
 	// For color badges
 	let brandLogo: string;
 	let primaryColor: string;
@@ -75,4 +80,17 @@ export function getBrandInfo(brand: string) {
 			conferenceName = '';
 	}
 	return { brandLogo, primaryColor, conferenceName };
+}
+
+export async function generatePDF(fileData: TableSchema, brand: Brand, type: PDFType) {
+	switch (type) {
+		case 'PLACARD':
+			return await generatePlacardPDF(fileData, brand);
+		case 'VERTICAL_BADGE':
+			return await generateVerticalBadgePDF(fileData, brand);
+		case 'HORIZONTAL_BADGE':
+			return await generateHorizontalBadgePDF(fileData, brand);
+		default:
+			throw new Error('PDF type not supported');
+	}
 }

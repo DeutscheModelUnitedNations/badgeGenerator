@@ -1,4 +1,9 @@
 <script lang="ts">
+	import {
+		getGenerationProgressPercent,
+		getGenerationProgressText
+	} from '$lib/stores/progress.svelte';
+
 	interface Props {
 		fileData: any;
 		brand: any;
@@ -6,7 +11,7 @@
 		schema: any;
 		downloadFilename: string;
 	}
-	const { fileData, brand, generatePDF, schema, downloadFilename }: Props = $props();
+	let { fileData, brand, generatePDF, schema, downloadFilename }: Props = $props();
 
 	let validationFailed = $state(false);
 	let pdfUrl = $state('');
@@ -43,8 +48,17 @@
 	{#if validationFailed}
 		<div class="alert alert-error">Data is invalid. Please check the input file.</div>
 	{:else if loading}
-		<div class="flex justify-center">
+		<div class="flex flex-col items-center justify-center gap-2">
 			<span class="loading loading-dots loading-lg text-primary"></span>
+			<progress
+				class="progress progress-primary w-56"
+				value={getGenerationProgressPercent() ?? 0}
+				max="100"
+			></progress>
+			<div class="flex items-center justify-center gap-1 font-mono">
+				<span class="badge">{getGenerationProgressText()}</span>
+				<span class="badge">{getGenerationProgressPercent()}%</span>
+			</div>
 		</div>
 	{:else}
 		<embed src={pdfUrl} type="application/pdf" class=" h-[80vh] w-full rounded-lg bg-white" />

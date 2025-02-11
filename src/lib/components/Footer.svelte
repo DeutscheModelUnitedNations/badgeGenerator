@@ -7,18 +7,18 @@
 		<a href="/" class="hover:underline">Home</a>
 		<a href="https://dmun.de/impressum" class="hover:underline">Impressum / Datenschutz</a>
 	</div>
-	<div class="mt-6 text-sm text-zinc-700">
+	<div class="mt-6 text-sm">
 		Copyright © 2024–{new Date().getFullYear()}
 		<a href="https://github.com/deutschemodelunitednations" class="hover:underline"
 			>Deutsche Model United Nations e.V.</a
 		>
 		/ <a href="https://github.com/strehk" class="hover:underline">Tade Strehk</a>
 	</div>
-	<div class="text-sm text-zinc-700">Made with ❤️ in Germany</div>
-	<div class="mt-4 text-sm text-zinc-700">
+	<div class="text-sm ">Made with ❤️ in Germany</div>
+	<div class="mt-4 text-sm">
 		Version: {configPublic.PUBLIC_VERSION ?? 'dev'}
 	</div>
-	<div class="text-sm text-zinc-700">
+	<div class="text-sm">
 		SHA: {configPublic.PUBLIC_SHA ?? 'n/a'}
 	</div>
 </div>

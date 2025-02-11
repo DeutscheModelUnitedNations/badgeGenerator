@@ -5,7 +5,7 @@
 </script>
 
 <div
-	class="flex min-h-screen w-full flex-col items-center gap-10 bg-gradient-to-br from-violet-100 to-violet-200 p-10"
+	class="flex min-h-screen w-full flex-col items-center gap-10 bg-gradient-to-br from-violet-100 to-violet-200 p-10 dark:from-base-200 dark:to-base-100"
 >
 	{@render children()}
 </div>

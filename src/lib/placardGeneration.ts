@@ -1,5 +1,5 @@
 import { PDFDocument, rgb, StandardFonts, PageSizes, PDFPage, PDFFont, degrees } from 'pdf-lib';
-import type { PlacardDataRow, PlacardDataTable } from './tableSchema';
+import type { TableRow, TableSchema } from './tableSchema';
 import type { Brand } from './brands';
 import { type PageStyles, fetchUint8Array, fetchFinalImageData, drawImage } from './pdfCommon';
 import {
@@ -35,10 +35,10 @@ class PDFPlacardGenerator {
 	styles: PageStyles;
 	helvetica!: PDFFont;
 	helveticaBold!: PDFFont;
-	rowData!: PlacardDataRow;
+	rowData!: TableRow;
 	brand!: Brand;
 
-	constructor(pdfDoc: PDFDocument, styles = defaultStyles, rowData: PlacardDataRow, brand: Brand) {
+	constructor(pdfDoc: PDFDocument, styles = defaultStyles, rowData: TableRow, brand: Brand) {
 		this.pdfDoc = pdfDoc;
 		this.styles = styles;
 		this.rowData = rowData;
@@ -211,7 +211,7 @@ class PDFPlacardGenerator {
 }
 
 export async function generatePlacardPDF(
-	fileData: PlacardDataTable,
+	fileData: TableSchema,
 	brand: Brand
 ): Promise<Uint8Array> {
 	try {

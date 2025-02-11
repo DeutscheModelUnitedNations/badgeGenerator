@@ -1,26 +1,54 @@
 import { z } from 'zod';
+import WorldCountries from 'world-countries';
 
 // Define a base schema with the common properties
-const baseSchema = z.object({
-	name: z.string(),
-	committee: z.string().optional(),
-	countryName: z.string(),
-	countryAlpha2Code: z.string().optional(),
-	alternativeImage: z.string().optional()
-});
+export const rowSchema = z
+	.object({
+		name: z.string().nonempty({
+			message: 'Zelle muss einen Wert enthalten'
+		}),
+		committee: z.string().optional(),
+		countryName: z.string().nonempty({
+			message: 'Zelle muss einen Wert enthalten'
+		}),
+		countryAlpha2Code: z
+			.string()
+			.optional()
+			.refine(
+				(value) => {
+					if (
+						WorldCountries.map((country) => country.cca2.toLocaleLowerCase()).includes(
+							value?.toLocaleLowerCase() ?? ''
+						)
+					)
+						return true;
+					if (value?.toLocaleLowerCase() === 'un') return true;
+					if (value === '') return true;
+					return false;
+				},
+				{
+					message:
+						'Zelle muss ein gültiger <strong>ISO 3166-1 alpha-2 Code</strong> oder <span class="badge badge-neutral">UN</span> für die UN-Flagge sein'
+				}
+			),
 
-export const placardSchema = z.array(baseSchema);
-
-export type PlacardDataTable = z.infer<typeof placardSchema>;
-export type PlacardDataRow = PlacardDataTable[number];
-
-export const badgeSchema = z.array(
-	baseSchema.extend({
+		alternativeImage: z.string().optional(),
 		pronouns: z.string().optional()
 	})
-);
+	.refine(
+		(data) => data.countryAlpha2Code || data.alternativeImage,
+		(data) => ({
+			message: `Entweder <span class="badge badge-neutral">countryAlpha2Code</span> oder <span class="badge badge-neutral">alternativeImage</span> muss einen Wert enthalten`
+		})
+	)
+	.refine(
+		(data) => !(data.countryAlpha2Code && data.alternativeImage),
+		(data) => ({
+			message: `<span class="badge badge-neutral">countryAlpha2Code</span> und <span class="badge badge-neutral">alternativeImage</span> dürfen nicht gleichzeitig einen Wert enthalten`
+		})
+	);
 
-export type BadgeDataTable = z.infer<typeof badgeSchema>;
-export type BadgeDataRow = BadgeDataTable[number];
+export const tableSchema = z.array(rowSchema);
 
-export type TableSchema = PlacardDataTable | BadgeDataTable;
+export type TableSchema = z.infer<typeof tableSchema>;
+export type TableRow = z.infer<typeof rowSchema>;

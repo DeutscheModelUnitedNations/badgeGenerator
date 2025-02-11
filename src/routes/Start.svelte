@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { placardSchema, type PlacardDataTable, type TableSchema } from '$lib/tableSchema';
+	import { type TableSchema } from '$lib/tableSchema';
 	import * as XLSX from 'xlsx';
 	import ImageUploader from '$lib/components/ImageUploader.svelte';
 	import { onMount } from 'svelte';
 
 	interface Props {
-		setFileData: (data: PlacardDataTable) => void;
+		setFileData: (data: TableSchema) => void;
 	}
 
 	let { setFileData }: Props = $props();

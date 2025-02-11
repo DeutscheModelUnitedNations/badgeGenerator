@@ -1,9 +1,9 @@
 <script lang="ts">
-	import type { PlacardDataTable } from '$lib/tableSchema';
+	import type { TableSchema } from '$lib/tableSchema';
 	import Preview from './Preview.svelte';
 	import Start from './Start.svelte';
 
-	let fileData = $state<PlacardDataTable>();
+	let fileData = $state<TableSchema>();
 </script>
 
 

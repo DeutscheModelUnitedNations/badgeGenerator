@@ -42,5 +42,7 @@
 		"zod": "^3.24.1",
 		"svelte-adapter-bun": "^0.5.2"
 	},
-	"dependencies": {}
+	"dependencies": {
+		"world-countries": "^5.0.0"
+	}
 }

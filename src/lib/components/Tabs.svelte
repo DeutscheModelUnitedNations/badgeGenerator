@@ -5,16 +5,17 @@
 			readonly value: T;
 		}[];
 		activeTab?: T;
+		disabled?: boolean;
 	}
 
-	let { tabs, activeTab = $bindable() }: Props = $props();
+	let { tabs, activeTab = $bindable(), disabled = false }: Props = $props();
 </script>
 
 <div role="tablist" class="tabs-boxed tabs">
 	{#each tabs as { title, value }}
 		<button
 			role="tab"
-			class="tab {activeTab === value && 'tab-active'}"
+			class="tab {activeTab === value && 'tab-active'} {disabled && 'tab-disabled'}"
 			onclick={() => (activeTab = value)}
 		>
 			{title}

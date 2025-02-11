@@ -1,6 +1,6 @@
 import { PDFDocument, rgb, StandardFonts, PageSizes, PDFPage, PDFFont, degrees } from 'pdf-lib';
-import type { BadgeDataRow, BadgeDataTable } from './tableSchema';
-import type { Brand } from './brands';
+import type { TableRow, TableSchema } from './tableSchema';
+import type { Brand } from './types';
 import {
 	type PageStyles,
 	hexToRGBColor,
@@ -38,10 +38,10 @@ class PDFHorizontalBadgeGenerator {
 	styles: PageStyles;
 	helvetica!: PDFFont;
 	helveticaBold!: PDFFont;
-	rowData!: BadgeDataRow;
+	rowData!: TableRow;
 	brand!: Brand;
 
-	constructor(pdfDoc: PDFDocument, styles = defaultStyles, rowData: BadgeDataRow, brand: Brand) {
+	constructor(pdfDoc: PDFDocument, styles = defaultStyles, rowData: TableRow, brand: Brand) {
 		this.pdfDoc = pdfDoc;
 		this.styles = styles;
 		this.rowData = rowData;
@@ -180,7 +180,7 @@ class PDFHorizontalBadgeGenerator {
 }
 
 export async function generateHorizontalBadgePDF(
-	fileData: BadgeDataTable,
+	fileData: TableSchema,
 	brand: Brand
 ): Promise<Uint8Array> {
 	const pdfDoc = await PDFDocument.create();

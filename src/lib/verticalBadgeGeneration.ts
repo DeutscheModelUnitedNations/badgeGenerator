@@ -1,5 +1,5 @@
 import { PDFDocument, rgb, StandardFonts, PDFPage, PDFFont } from 'pdf-lib';
-import type { BadgeDataRow, BadgeDataTable } from './tableSchema';
+import type { TableRow, TableSchema } from './tableSchema';
 import type { Brand } from './brands';
 import {
 	type PageStyles,
@@ -37,10 +37,10 @@ class PDFVerticalBadgeGenerator {
 	styles: PageStyles;
 	helvetica!: PDFFont;
 	helveticaBold!: PDFFont;
-	rowData!: BadgeDataRow;
+	rowData!: TableRow;
 	brand!: Brand;
 
-	constructor(pdfDoc: PDFDocument, styles = defaultStyles, rowData: BadgeDataRow, brand: Brand) {
+	constructor(pdfDoc: PDFDocument, styles = defaultStyles, rowData: TableRow, brand: Brand) {
 		this.pdfDoc = pdfDoc;
 		this.styles = styles;
 		this.rowData = rowData;
@@ -173,7 +173,7 @@ class PDFVerticalBadgeGenerator {
 }
 
 export async function generateVerticalBadgePDF(
-	fileData: BadgeDataTable,
+	fileData: TableSchema,
 	brand: Brand
 ): Promise<Uint8Array> {
 	const pdfDoc = await PDFDocument.create();

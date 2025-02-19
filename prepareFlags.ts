@@ -1,7 +1,8 @@
 import { join } from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import svg2img from 'svg2img';
+// import svg2img from 'svg2img';
+import sharp from 'sharp';
 import { readdirSync, writeFileSync, readFileSync } from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -16,8 +17,14 @@ for (const file of svgFiles) {
 	const svgContent = readFileSync(join(flagsDir, file), 'utf-8');
 	const outputPath = join(outputDir, file.replace('.svg', '.png'));
 
-	svg2img(svgContent, (error, buffer) => {
-		writeFileSync(outputPath, buffer);
-	});
-	console.log(`Converted ${file} to ${outputPath}`);
+	// https://github.com/fuzhenn/node-svg2img/issues/86
+	// svg2img(svgContent, (error, buffer) => {
+	// 	writeFileSync(outputPath, buffer);
+	// });
+
+	const png = await sharp(Buffer.from(svgContent)).png().toBuffer();
+
+	writeFileSync(outputPath, png);
+
+	console.info(`Converted ${file} to ${outputPath}`);
 }

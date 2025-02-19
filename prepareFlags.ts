@@ -22,8 +22,7 @@ for (const file of svgFiles) {
 	// 	writeFileSync(outputPath, buffer);
 	// });
 
-	const png = await sharp(Buffer.from(svgContent)).png().toBuffer();
-
+	const png = await sharp(Buffer.from(svgContent)).resize(1000, 750).png().toBuffer();
 	writeFileSync(outputPath, png);
 
 	console.info(`Converted ${file} to ${outputPath}`);

@@ -68,6 +68,30 @@ class PDFPlacardGenerator {
 	async generateContent(): Promise<void> {
 		const { width, height } = this.page.getSize();
 
+		// Media Consent Circles
+		const MEDIA_CONSENT_CIRCLE_RADIUS = 5;
+		const MEDIA_CONSENT_MARGIN_TO_MIDDLE = 20;
+		if (this.rowData.mediaConsentStatus !== 'ALLOWED_ALL') {
+			this.page.drawCircle({
+				color:
+					this.rowData.mediaConsentStatus === 'PARTIALLY_ALLOWED'
+						? rgb(1, 0.647, 0)
+						: rgb(0, 0.502, 1),
+				size: MEDIA_CONSENT_CIRCLE_RADIUS * 2,
+				x: width - this.styles.margin.right - MEDIA_CONSENT_CIRCLE_RADIUS,
+				y: height / 2 - MEDIA_CONSENT_MARGIN_TO_MIDDLE - MEDIA_CONSENT_CIRCLE_RADIUS
+			});
+			this.page.drawCircle({
+				color:
+					this.rowData.mediaConsentStatus === 'PARTIALLY_ALLOWED'
+						? rgb(1, 0.647, 0)
+						: rgb(0, 0.502, 1),
+				size: MEDIA_CONSENT_CIRCLE_RADIUS * 2,
+				x: this.styles.margin.left + MEDIA_CONSENT_CIRCLE_RADIUS,
+				y: height / 2 + MEDIA_CONSENT_MARGIN_TO_MIDDLE + MEDIA_CONSENT_CIRCLE_RADIUS
+			});
+		}
+
 		let brandLogo;
 
 		switch (this.brand) {

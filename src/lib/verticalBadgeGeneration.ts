@@ -69,6 +69,21 @@ class PDFVerticalBadgeGenerator {
 	async generateContent(): Promise<void> {
 		const { width, height } = this.page.getSize();
 
+		// Media Consent Circles
+		const MEDIA_CONSENT_CIRCLE_RADIUS = 3;
+		const MEDIA_CONSENT_MARGIN_BORDER = 10;
+		if (this.rowData.mediaConsentStatus !== 'ALLOWED_ALL') {
+			this.page.drawCircle({
+				color:
+					this.rowData.mediaConsentStatus === 'PARTIALLY_ALLOWED'
+						? rgb(1, 0.647, 0)
+						: rgb(0, 0.502, 1),
+				size: MEDIA_CONSENT_CIRCLE_RADIUS * 2,
+				x: width - MEDIA_CONSENT_MARGIN_BORDER - MEDIA_CONSENT_CIRCLE_RADIUS,
+				y: height - MEDIA_CONSENT_MARGIN_BORDER - MEDIA_CONSENT_CIRCLE_RADIUS
+			});
+		}
+
 		// Replace duplicated code with a helper function
 		const { brandLogo, primaryColor, conferenceName } = getBrandInfo(this.brand);
 

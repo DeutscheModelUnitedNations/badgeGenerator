@@ -33,7 +33,12 @@ export const rowSchema = z
 			),
 
 		alternativeImage: z.string().optional(),
-		pronouns: z.string().optional()
+		pronouns: z.string().optional(),
+		mediaConsentStatus: z
+			.enum(['NOT_ALLOWED', 'PARTIALLY_ALLOWED', 'ALLOWED_ALL', 'NOT_SET'], {
+				description: 'Mediennutzungserlaubnis'
+			})
+			.default('NOT_ALLOWED')
 	})
 	.refine((data) => data.countryAlpha2Code || data.alternativeImage, {
 		message: `Entweder <span class="badge badge-neutral">countryAlpha2Code</span> oder <span class="badge badge-neutral">alternativeImage</span> muss einen Wert enthalten`

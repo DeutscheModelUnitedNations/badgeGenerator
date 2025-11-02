@@ -101,6 +101,9 @@ class PDFPlacardGenerator {
 			case 'MUNBW':
 				brandLogo = '/logo/watermark/munbw.png';
 				break;
+			case 'DMUN':
+				brandLogo = '/logo/watermark/dmun.png';
+				break;
 		}
 
 		const { img: brandLogoImage } = await fetchUint8Array(brandLogo);

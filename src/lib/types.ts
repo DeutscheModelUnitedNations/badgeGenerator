@@ -4,6 +4,6 @@ export interface Image {
 	image: string;
 }
 
-export type Brand = 'MUN-SH' | 'MUNBW';
+export type Brand = 'MUN-SH' | 'MUNBW' | "DMUN";
 
 export type PDFType = 'PLACARD' | 'VERTICAL_BADGE' | 'HORIZONTAL_BADGE';

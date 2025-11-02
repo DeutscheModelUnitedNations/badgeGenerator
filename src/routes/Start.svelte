@@ -108,12 +108,9 @@
 
 <div class="divider mx-auto w-full max-w-lg"></div>
 
-<h3 class="text-xl">Beispieldateien</h3>
+<h3 class="text-xl">Beispieldatei</h3>
 <div class="join">
 	<a href="/sample/badges.csv" download="sample-badges.csv" class="btn btn-primary join-item">
-		Namensschilder CSV
-	</a>
-	<a href="/sample/placards.csv" download="sample-placards.csv" class="btn btn-primary join-item">
-		Länderschilder CSV
+		CSV
 	</a>
 </div>

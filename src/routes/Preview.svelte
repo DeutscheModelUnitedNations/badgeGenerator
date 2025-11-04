@@ -22,7 +22,8 @@
 	const brandingTabs = [
 		{ title: 'MUN-SH', value: 'MUN-SH' },
 		{ title: 'MUNBW', value: 'MUNBW' },
-		{ title: "DMUN", value: 'DMUN' }
+		{ title: "DMUN", value: 'DMUN' },
+		{ title: "United Nations", value: "UN"}
 	] as const;
 	let brand = $state<Brand>('MUN-SH');
 

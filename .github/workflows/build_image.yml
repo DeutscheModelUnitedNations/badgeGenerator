@@ -54,3 +54,9 @@ jobs:
           build-args: |
             VERSION=${{ github.event.release.tag_name || github.sha }}
             SHA=${{ github.sha }}
+
+      - name: Trigger Webhook for redeployment
+        if: github.event_name == 'release'
+        uses: joelwmale/webhook-action@master
+        with:
+          url: ${{ secrets.DEPLOY_WEBHOOK_URL }}

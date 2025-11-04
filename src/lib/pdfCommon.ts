@@ -117,6 +117,16 @@ export function getBrandInfo(brand: Brand) {
 			primaryColor = '#0C4695';
 			conferenceName = `Baden-Württemberg ${new Date().getFullYear()}`;
 			break;
+		case "DMUN":
+			brandLogo = '/logo/color/dmun-brand-logo.png';
+			primaryColor = '#3d7dd2';
+			conferenceName = ``;
+			break;
+		case 'UN':
+			brandLogo = '/logo/color/un-logo.png';
+			primaryColor = '#5b92e5';
+			conferenceName = ``;
+			break;
 		default:
 			brandLogo = '';
 			primaryColor = '#000000';

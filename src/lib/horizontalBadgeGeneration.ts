@@ -1,9 +1,8 @@
-import { PDFDocument, rgb, StandardFonts, PageSizes, PDFPage, PDFFont, degrees } from 'pdf-lib';
+import { PDFDocument, rgb, StandardFonts, PDFPage, PDFFont } from 'pdf-lib';
 import type { TableRow, TableSchema } from './tableSchema';
 import type { Brand } from './types';
 import {
 	type PageStyles,
-	hexToRGBColor,
 	fetchUint8Array,
 	fetchFinalImageData,
 	drawImage,
@@ -46,19 +45,22 @@ class PDFHorizontalBadgeGenerator {
 	rowData!: TableRow;
 	brand!: Brand;
 	rowNumber!: number;
+	showTrimBorder: boolean;
 
 	constructor(
 		pdfDoc: PDFDocument,
 		styles = defaultStyles,
 		rowData: TableRow,
 		brand: Brand,
-		rowNumber: number
+		rowNumber: number,
+		showTrimBorder: boolean = false
 	) {
 		this.pdfDoc = pdfDoc;
 		this.styles = styles;
 		this.rowData = rowData;
 		this.brand = brand;
 		this.rowNumber = rowNumber;
+		this.showTrimBorder = showTrimBorder;
 	}
 
 	protected async initialize(): Promise<void> {
@@ -87,7 +89,7 @@ class PDFHorizontalBadgeGenerator {
 		}
 
 		// Replace duplicated code with a helper function
-		const { brandLogo, primaryColor, conferenceName } = getBrandInfo(this.brand);
+		const { brandLogo, conferenceName } = getBrandInfo(this.brand);
 
 		const { img: brandLogoImage } = await fetchUint8Array(brandLogo);
 
@@ -152,15 +154,15 @@ class PDFHorizontalBadgeGenerator {
 			console.error('Error loading logo:', error);
 		}
 
-		// Generate barcode if id is provided (rotated 90°, next to flag)
+		// Generate barcode if id is provided (under the flag)
 		if (this.rowData.id) {
 			try {
 				const barcodeCanvas = document.createElement('canvas');
 				bwipjs.toCanvas(barcodeCanvas, {
 					bcid: 'code128',
 					text: this.rowData.id,
-					scale: 2,
-					height: 8,
+					scale: 3,
+					height: 6,
 					includetext: false
 				});
 				const barcodeImg = barcodeCanvas.toDataURL('image/png');
@@ -168,16 +170,14 @@ class PDFHorizontalBadgeGenerator {
 				const barcodeUint8 = Uint8Array.from(atob(barcodeData), (c) => c.charCodeAt(0));
 				const pngImage = await this.pdfDoc.embedPng(barcodeUint8);
 
-				const BARCODE_LENGTH = IMG_HEIGHT; // Same height as flag
-				const BARCODE_THICKNESS = 8;
-				const BARCODE_GAP = 3;
-				const FLAG_CENTER_Y = IMG_MARGIN_BOTTOM + IMG_HEIGHT / 2;
+				const BARCODE_WIDTH = IMG_WIDTH; // Same width as flag
+				const BARCODE_HEIGHT = 10;
+				const BARCODE_GAP = 2;
 				this.page.drawImage(pngImage, {
-					x: IMG_MARGIN_LEFT + IMG_WIDTH + BARCODE_GAP + BARCODE_THICKNESS,
-					y: FLAG_CENTER_Y - BARCODE_LENGTH / 2,
-					width: BARCODE_LENGTH,
-					height: BARCODE_THICKNESS,
-					rotate: degrees(90)
+					x: IMG_MARGIN_LEFT,
+					y: IMG_MARGIN_BOTTOM - BARCODE_GAP - BARCODE_HEIGHT,
+					width: BARCODE_WIDTH,
+					height: BARCODE_HEIGHT
 				});
 			} catch (error) {
 				console.error('Error generating barcode:', error);
@@ -251,14 +251,17 @@ class PDFHorizontalBadgeGenerator {
 			});
 		}
 
-		const DECOR_LINE_DISTANCE_FROM_BOTTOM = 4;
-
-		this.page.drawLine({
-			start: { x: 0, y: DECOR_LINE_DISTANCE_FROM_BOTTOM },
-			end: { x: width, y: DECOR_LINE_DISTANCE_FROM_BOTTOM },
-			thickness: 8,
-			color: hexToRGBColor(primaryColor)
-		});
+		// Draw gray trim border at the edge if enabled
+		if (this.showTrimBorder) {
+			this.page.drawRectangle({
+				x: 0,
+				y: 0,
+				width: width,
+				height: height,
+				borderColor: rgb(0.6, 0.6, 0.6),
+				borderWidth: 0.25
+			});
+		}
 	}
 
 	public async generate(): Promise<PDFPage> {
@@ -270,13 +273,14 @@ class PDFHorizontalBadgeGenerator {
 
 export async function generateHorizontalBadgePDF(
 	fileData: TableSchema,
-	brand: Brand
+	brand: Brand,
+	showTrimBorder: boolean = false
 ): Promise<Uint8Array> {
 	const pdfDoc = await PDFDocument.create();
 
 	// Create base pages
 	const pageGenerators = fileData.map(
-		(row, i) => new PDFHorizontalBadgeGenerator(pdfDoc, defaultStyles, row, brand, i)
+		(row, i) => new PDFHorizontalBadgeGenerator(pdfDoc, defaultStyles, row, brand, i, showTrimBorder)
 	);
 	// Generate all pages
 	for (let i = 0; i < pageGenerators.length; i++) {

@@ -15,17 +15,18 @@
 		fileData: any;
 		brand: Brand;
 		type: PDFType;
+		showTrimBorder?: boolean;
 		downloadFilename: string;
 		loading: boolean;
 	}
-	let { fileData, brand, type, downloadFilename, loading = $bindable() }: Props = $props();
+	let { fileData, brand, type, showTrimBorder = false, downloadFilename, loading = $bindable() }: Props = $props();
 
 	let validationFailed = $state<SafeParseError<TableRow>['error']['issues']>([]);
 	let pdfUrl = $state('');
 
 	async function generatePreview() {
 		try {
-			const pdfBytes = await generatePDF(fileData, brand, type);
+			const pdfBytes = await generatePDF(fileData, brand, type, showTrimBorder);
 			const blob = new Blob([new Uint8Array(pdfBytes)], { type: 'application/pdf' });
 			pdfUrl = URL.createObjectURL(blob);
 		} catch (error) {
@@ -60,6 +61,8 @@
 		if (type) {
 			pdfUrl = '';
 		}
+		// Track showTrimBorder to trigger re-render when changed
+		showTrimBorder;
 	});
 </script>
 

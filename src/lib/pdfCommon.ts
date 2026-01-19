@@ -135,7 +135,7 @@ export function getBrandInfo(brand: Brand) {
 	return { brandLogo, primaryColor, conferenceName };
 }
 
-export async function generatePDF(fileData: TableSchema, brand: Brand, type: PDFType) {
+export async function generatePDF(fileData: TableSchema, brand: Brand, type: PDFType, showTrimBorder: boolean = false) {
 	resetGenerationProgress(fileData.length);
 	resetWarnings();
 
@@ -143,9 +143,9 @@ export async function generatePDF(fileData: TableSchema, brand: Brand, type: PDF
 		case 'PLACARD':
 			return await generatePlacardPDF(fileData, brand);
 		case 'VERTICAL_BADGE':
-			return await generateVerticalBadgePDF(fileData, brand);
+			return await generateVerticalBadgePDF(fileData, brand, showTrimBorder);
 		case 'HORIZONTAL_BADGE':
-			return await generateHorizontalBadgePDF(fileData, brand);
+			return await generateHorizontalBadgePDF(fileData, brand, showTrimBorder);
 		default:
 			throw new Error('PDF type not supported');
 	}

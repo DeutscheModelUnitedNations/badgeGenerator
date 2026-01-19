@@ -45,19 +45,22 @@ class PDFVerticalBadgeGenerator {
 	rowData!: TableRow;
 	brand!: Brand;
 	rowNumber!: number;
+	showTrimBorder: boolean;
 
 	constructor(
 		pdfDoc: PDFDocument,
 		styles = defaultStyles,
 		rowData: TableRow,
 		brand: Brand,
-		rowNumber: number
+		rowNumber: number,
+		showTrimBorder: boolean = false
 	) {
 		this.pdfDoc = pdfDoc;
 		this.styles = styles;
 		this.rowData = rowData;
 		this.brand = brand;
 		this.rowNumber = rowNumber;
+		this.showTrimBorder = showTrimBorder;
 	}
 
 	protected async initialize(): Promise<void> {
@@ -249,6 +252,18 @@ class PDFVerticalBadgeGenerator {
 				size: this.styles.fontSize.heading
 			});
 		}
+
+		// Draw gray trim border at the edge if enabled
+		if (this.showTrimBorder) {
+			this.page.drawRectangle({
+				x: 0,
+				y: 0,
+				width: width,
+				height: height,
+				borderColor: rgb(0.6, 0.6, 0.6),
+				borderWidth: 0.25
+			});
+		}
 	}
 
 	public async generate(): Promise<PDFPage> {
@@ -260,13 +275,14 @@ class PDFVerticalBadgeGenerator {
 
 export async function generateVerticalBadgePDF(
 	fileData: TableSchema,
-	brand: Brand
+	brand: Brand,
+	showTrimBorder: boolean = false
 ): Promise<Uint8Array> {
 	const pdfDoc = await PDFDocument.create();
 
 	// Create base pages
 	const pageGenerators = fileData.map(
-		(row, i) => new PDFVerticalBadgeGenerator(pdfDoc, defaultStyles, row, brand, i)
+		(row, i) => new PDFVerticalBadgeGenerator(pdfDoc, defaultStyles, row, brand, i, showTrimBorder)
 	);
 	// Generate all pages
 	for (let i = 0; i < pageGenerators.length; i++) {

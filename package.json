@@ -34,7 +34,6 @@
 		"prettier": "^3.8.0",
 		"prettier-plugin-svelte": "^3.4.1",
 		"prettier-plugin-tailwindcss": "^0.6.14",
-		"replace-special-characters": "^1.2.7",
 		"sharp": "^0.33.5",
 		"sqlite3": "^5.1.7",
 		"svelte": "^5.47.0",
@@ -49,6 +48,9 @@
 	},
 	"dependencies": {
 		"@bwip-js/browser": "^4.8.0",
+		"@fontsource-variable/inter": "^5.2.8",
+		"@fontsource/inter": "^5.2.8",
+		"@pdf-lib/fontkit": "^1.1.1",
 		"svelte-persisted-state": "^1.2.0",
 		"world-countries": "^5.1.0"
 	}

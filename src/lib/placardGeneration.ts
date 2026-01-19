@@ -1,4 +1,4 @@
-import { PDFDocument, rgb, StandardFonts, PageSizes, PDFPage, PDFFont, degrees } from 'pdf-lib';
+import { PDFDocument, rgb, PageSizes, PDFPage, PDFFont, degrees } from 'pdf-lib';
 import type { TableRow, TableSchema } from './tableSchema';
 import type { Brand } from './types';
 import {
@@ -7,7 +7,8 @@ import {
 	fetchFinalImageData,
 	drawImage,
 	widthOfTextAtSize,
-	drawText
+	drawText,
+	embedFonts
 } from './pdfCommon';
 import { resetGenerationProgress, setGenerationProgress } from '$lib/stores/progress.svelte';
 import { addWarning, WarningType } from './stores/warnings.svelte';
@@ -59,8 +60,9 @@ class PDFPlacardGenerator {
 	}
 
 	protected async initialize(): Promise<void> {
-		this.helvetica = await this.pdfDoc.embedFont(StandardFonts.Helvetica);
-		this.helveticaBold = await this.pdfDoc.embedFont(StandardFonts.HelveticaBold);
+		const fonts = await embedFonts(this.pdfDoc);
+		this.helvetica = fonts.regular;
+		this.helveticaBold = fonts.bold;
 		// Change to landscape by switching width and height
 		this.page = this.pdfDoc.addPage([PageSizes.A4[1], PageSizes.A4[0]]);
 	}

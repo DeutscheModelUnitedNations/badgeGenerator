@@ -1,4 +1,5 @@
-import { rgb } from 'pdf-lib';
+import { rgb, type PDFDocument, type PDFFont } from 'pdf-lib';
+import fontkit from '@pdf-lib/fontkit';
 import type { Brand, PDFType } from './types';
 import type { TableSchema } from './tableSchema';
 import { generatePlacardPDF } from './placardGeneration';
@@ -6,7 +7,36 @@ import { generateVerticalBadgePDF } from './verticalBadgeGeneration';
 import { generateHorizontalBadgePDF } from './horizontalBadgeGeneration';
 import { resetGenerationProgress } from './stores/progress.svelte';
 import { addWarning, resetWarnings, WarningType } from './stores/warnings.svelte';
-import replaceSpecialChars from 'replace-special-characters';
+
+let cachedFonts: { regular: Uint8Array; bold: Uint8Array } | null = null;
+
+export async function loadFonts(): Promise<{ regular: Uint8Array; bold: Uint8Array }> {
+	if (cachedFonts) return cachedFonts;
+
+	const [regularRes, boldRes] = await Promise.all([
+		fetch('/fonts/Inter-Regular.woff2'),
+		fetch('/fonts/Inter-Bold.woff2')
+	]);
+
+	cachedFonts = {
+		regular: new Uint8Array(await regularRes.arrayBuffer()),
+		bold: new Uint8Array(await boldRes.arrayBuffer())
+	};
+
+	return cachedFonts;
+}
+
+export async function embedFonts(
+	pdfDoc: PDFDocument
+): Promise<{ regular: PDFFont; bold: PDFFont }> {
+	pdfDoc.registerFontkit(fontkit);
+	const fonts = await loadFonts();
+
+	const regular = await pdfDoc.embedFont(fonts.regular);
+	const bold = await pdfDoc.embedFont(fonts.bold);
+
+	return { regular, bold };
+}
 
 export interface PageStyles {
 	margin: { left: number; right: number; top: number; bottom: number };
@@ -76,29 +106,11 @@ export function drawText(this_: any, font: any, text: string, options: any, path
 			path
 		});
 	}
-	try {
-		this_.page.drawText(text, options);
-	} catch (error: any) {
-		console.log(error);
-		addWarning({
-			type: WarningType.TEXT,
-			message: 'Text enthält unzulässige Zeichen und wurde bereinigt.',
-			details: error?.message,
-			path
-		});
-		const sanitizedText = replaceSpecialChars(text);
-		this_.page.drawText(sanitizedText, options);
-	}
+	this_.page.drawText(text, options);
 }
 
 export function widthOfTextAtSize(this_: any, font: any, text: string, size: number) {
-	try {
-		return font.widthOfTextAtSize(text, size);
-	} catch (error: any) {
-		console.log(error.message);
-		const sanitizedText = replaceSpecialChars(text);
-		return font.widthOfTextAtSize(sanitizedText, size);
-	}
+	return font.widthOfTextAtSize(text, size);
 }
 
 export function getBrandInfo(brand: Brand) {

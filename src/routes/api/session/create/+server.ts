@@ -19,18 +19,36 @@ export const POST: RequestHandler = async ({ request, locals, url }) => {
 	const db = locals.db;
 
 	try {
-		const formData = await request.formData();
+		const contentType = request.headers.get('content-type') || '';
+		let data: SessionData;
 
-		const data: SessionData = {
-			name: formData.get('name')?.toString() || undefined,
-			countryName: formData.get('countryName')?.toString() || undefined,
-			countryAlpha2Code: formData.get('countryAlpha2Code')?.toString() || undefined,
-			alternativeImage: formData.get('alternativeImage')?.toString() || undefined,
-			committee: formData.get('committee')?.toString() || undefined,
-			pronouns: formData.get('pronouns')?.toString() || undefined,
-			id: formData.get('id')?.toString() || undefined,
-			mediaConsentStatus: formData.get('mediaConsentStatus')?.toString() || undefined
-		};
+		if (contentType.includes('application/json')) {
+			// Parse JSON body
+			const json = await request.json();
+			data = {
+				name: json.name || undefined,
+				countryName: json.countryName || undefined,
+				countryAlpha2Code: json.countryAlpha2Code || undefined,
+				alternativeImage: json.alternativeImage || undefined,
+				committee: json.committee || undefined,
+				pronouns: json.pronouns || undefined,
+				id: json.id || undefined,
+				mediaConsentStatus: json.mediaConsentStatus || undefined
+			};
+		} else {
+			// Parse FormData (multipart/form-data or application/x-www-form-urlencoded)
+			const formData = await request.formData();
+			data = {
+				name: formData.get('name')?.toString() || undefined,
+				countryName: formData.get('countryName')?.toString() || undefined,
+				countryAlpha2Code: formData.get('countryAlpha2Code')?.toString() || undefined,
+				alternativeImage: formData.get('alternativeImage')?.toString() || undefined,
+				committee: formData.get('committee')?.toString() || undefined,
+				pronouns: formData.get('pronouns')?.toString() || undefined,
+				id: formData.get('id')?.toString() || undefined,
+				mediaConsentStatus: formData.get('mediaConsentStatus')?.toString() || undefined
+			};
+		}
 
 		// Validate that at least name is provided
 		if (!data.name) {

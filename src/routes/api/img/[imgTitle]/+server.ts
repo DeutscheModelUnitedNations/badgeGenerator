@@ -1,6 +1,6 @@
 import sharp from 'sharp';
-import type { RequestEvent, RequestHandler } from './$types';
-import type { Image } from '$lib/types';
+import type { RequestHandler } from './$types';
+import type { Image, ImageListItem } from '$lib/types';
 
 export const GET: RequestHandler = async ({ locals, params, url }) => {
 	try {
@@ -64,6 +64,92 @@ export const DELETE: RequestHandler = async ({ locals, params }) => {
 			status: 200
 		});
 	} catch (err) {
+		return new Response('Database error', {
+			status: 500,
+			headers: { 'Content-Type': 'text/plain' }
+		});
+	}
+};
+
+export const PUT: RequestHandler = async ({ locals, params, request }) => {
+	const db = locals.db;
+
+	try {
+		const body = await request.json();
+		const newTitle = body.title;
+
+		if (!newTitle || typeof newTitle !== 'string') {
+			return new Response('Missing or invalid title', {
+				status: 400,
+				headers: { 'Content-Type': 'text/plain' }
+			});
+		}
+
+		if (newTitle === params.imgTitle) {
+			return new Response('New title is the same as old title', {
+				status: 400,
+				headers: { 'Content-Type': 'text/plain' }
+			});
+		}
+
+		// Check if new title already exists
+		const existingImage = await new Promise<Image | undefined>((resolve, reject) => {
+			db.get<Image>('SELECT title FROM image WHERE title = ?', [newTitle], (err, row) => {
+				if (err) reject(err);
+				else resolve(row);
+			});
+		});
+
+		if (existingImage) {
+			return new Response('An image with this title already exists', {
+				status: 409,
+				headers: { 'Content-Type': 'text/plain' }
+			});
+		}
+
+		// Update the title
+		await new Promise<void>((resolve, reject) => {
+			db.run('UPDATE image SET title = ? WHERE title = ?', [newTitle, params.imgTitle], (err: Error) => {
+				if (err) reject(err);
+				else resolve();
+			});
+		});
+
+		// Fetch updated image data
+		const updatedImage = await new Promise<Image | undefined>((resolve, reject) => {
+			db.get<Image>(
+				'SELECT title, extension, createdAt, width, height, fileSize FROM image WHERE title = ?',
+				[newTitle],
+				(err, row) => {
+					if (err) reject(err);
+					else resolve(row);
+				}
+			);
+		});
+
+		if (!updatedImage) {
+			return new Response('Image not found after update', {
+				status: 404,
+				headers: { 'Content-Type': 'text/plain' }
+			});
+		}
+
+		const responseData: ImageListItem = {
+			title: updatedImage.title,
+			extension: updatedImage.extension,
+			url: `/api/img/${encodeURIComponent(updatedImage.title)}`,
+			createdAt: updatedImage.createdAt,
+			width: updatedImage.width,
+			height: updatedImage.height,
+			fileSize: updatedImage.fileSize
+		};
+
+		return new Response(JSON.stringify(responseData), {
+			status: 200,
+			headers: { 'Content-Type': 'application/json' }
+		});
+	} catch (err) {
+		console.error('Error renaming image:', err);
 		return new Response('Database error', {
 			status: 500,
 			headers: { 'Content-Type': 'text/plain' }

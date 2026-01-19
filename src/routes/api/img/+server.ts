@@ -1,4 +1,5 @@
 import type { RequestHandler } from './$types';
+import type { ImageListItem } from '$lib/types';
 import sharp from 'sharp';
 
 export const POST: RequestHandler = async ({ request, locals }) => {
@@ -36,27 +37,45 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			})
 			.toBuffer();
 
+		// Get image metadata
+		const metadata = await sharp(preparedImage).metadata();
+		const createdAt = new Date().toISOString();
+		const fileSize = preparedImage.length;
+		const width = metadata.width || 1200;
+		const height = metadata.height || 900;
+
 		await new Promise<void>((resolve, reject) => {
 			db.run(
-				`INSERT OR REPLACE INTO image (title, extension, image) 
-				VALUES (?, ?, ?)`,
-				[title, extension, preparedImage.toString('base64')],
+				`INSERT OR REPLACE INTO image (title, extension, image, createdAt, width, height, fileSize)
+				VALUES (?, ?, ?, ?, ?, ?, ?)`,
+				[title, extension, preparedImage.toString('base64'), createdAt, width, height, fileSize],
 				(err: Error) => {
 					if (err) {
-						throw err;
+						reject(err);
 					} else resolve();
 				}
 			);
 		});
 
-		return new Response(null, {
+		const responseData: ImageListItem = {
+			title,
+			extension,
+			url: `/api/img/${encodeURIComponent(title)}`,
+			createdAt,
+			width,
+			height,
+			fileSize
+		};
+
+		return new Response(JSON.stringify(responseData), {
 			status: 201,
 			headers: {
-				'Content-Type': 'application/octet-stream',
+				'Content-Type': 'application/json',
 				Location: `/api/img/${encodeURIComponent(title)}`
 			}
 		});
 	} catch (err) {
+		console.error('Failed to process image:', err);
 		return new Response('Failed to process image', {
 			status: 500,
 			headers: { 'Content-Type': 'text/plain' }

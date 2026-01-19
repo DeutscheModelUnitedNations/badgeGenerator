@@ -10,7 +10,6 @@
 	let { image, onSave, onCancel }: Props = $props();
 
 	// Edit settings state
-	let fitMode = $state<'cover' | 'contain'>('cover');
 	let zoom = $state(1.0);
 	let offsetX = $state(0);
 	let offsetY = $state(0);
@@ -33,17 +32,23 @@
 		image.url.includes('?') ? `${image.url}&editor=1` : `${image.url}?editor=${Date.now()}`
 	);
 
+	// Can only pan when zoomed in (zoom > 1)
+	let canPan = $derived(zoom > 1);
+
 	// Compute preview styles based on settings
 	let previewStyle = $derived(() => {
-		if (fitMode === 'contain') {
+		if (zoom < 1) {
+			// Zoom < 100%: Show image smaller with padding
+			const scale = zoom;
 			return {
 				objectFit: 'contain' as const,
 				objectPosition: 'center',
-				transform: 'none',
-				backgroundColor
+				transform: `scale(${scale})`,
+				width: '100%',
+				height: '100%'
 			};
 		} else {
-			// Cover mode with zoom and offset
+			// Zoom >= 100%: Cover mode with crop/pan
 			const scale = zoom;
 			const translateX = -offsetX * 0.5; // Map percentage to translate
 			const translateY = -offsetY * 0.5;
@@ -51,13 +56,13 @@
 				objectFit: 'cover' as const,
 				objectPosition: 'center',
 				transform: `scale(${scale}) translate(${translateX}%, ${translateY}%)`,
-				backgroundColor: 'transparent'
+				width: '100%',
+				height: '100%'
 			};
 		}
 	});
 
 	function handleReset() {
-		fitMode = 'cover';
 		zoom = 1.0;
 		offsetX = 0;
 		offsetY = 0;
@@ -69,7 +74,7 @@
 		errorMessage = '';
 		try {
 			await onSave({
-				fitMode,
+				fitMode: zoom < 1 ? 'contain' : 'cover', // Determined by zoom level
 				zoom,
 				offsetX,
 				offsetY,
@@ -84,7 +89,7 @@
 	}
 
 	function handleMouseDown(e: MouseEvent) {
-		if (fitMode !== 'cover') return;
+		if (!canPan) return;
 		isDragging = true;
 		dragStartX = e.clientX;
 		dragStartY = e.clientY;
@@ -94,7 +99,7 @@
 	}
 
 	function handleMouseMove(e: MouseEvent) {
-		if (!isDragging || fitMode !== 'cover') return;
+		if (!isDragging || !canPan) return;
 
 		const deltaX = e.clientX - dragStartX;
 		const deltaY = e.clientY - dragStartY;
@@ -126,7 +131,7 @@
 		<div
 			bind:this={previewContainer}
 			class="relative w-full max-w-lg overflow-hidden rounded-lg shadow-lg"
-			style="aspect-ratio: 4/3; background-color: {fitMode === 'contain' ? backgroundColor : '#1f2937'};"
+			style="aspect-ratio: 4/3; background-color: {backgroundColor};"
 		>
 			<!-- 4:3 guide overlay -->
 			<div class="absolute inset-0 pointer-events-none border-2 border-dashed border-white/30 rounded-lg z-10"></div>
@@ -136,13 +141,13 @@
 			<img
 				src={imageUrl}
 				alt={image.title}
-				class="w-full h-full {fitMode === 'cover' ? 'cursor-move' : ''}"
+				class="w-full h-full {canPan ? 'cursor-move' : ''}"
 				style="object-fit: {previewStyle().objectFit}; object-position: {previewStyle().objectPosition}; transform: {previewStyle().transform};"
 				onmousedown={handleMouseDown}
 				draggable="false"
 			/>
 
-			{#if fitMode === 'cover'}
+			{#if canPan}
 				<div class="absolute bottom-2 left-2 text-xs text-white/70 bg-black/50 px-2 py-1 rounded z-20">
 					Zum Verschieben ziehen
 				</div>
@@ -155,84 +160,63 @@
 		<h3 class="text-lg font-semibold mb-4">Bild bearbeiten</h3>
 
 		<div class="space-y-5">
-			<!-- Fit mode toggle -->
+			<!-- Zoom slider -->
 			<div>
-				<label class="text-sm text-base-content/60 block mb-2">Anpassung</label>
-				<div class="flex gap-2">
-					<label class="flex-1">
-						<input
-							type="radio"
-							name="fitMode"
-							value="cover"
-							bind:group={fitMode}
-							class="hidden peer"
-						/>
-						<div class="btn btn-sm w-full peer-checked:btn-primary">Füllen</div>
-					</label>
-					<label class="flex-1">
-						<input
-							type="radio"
-							name="fitMode"
-							value="contain"
-							bind:group={fitMode}
-							class="hidden peer"
-						/>
-						<div class="btn btn-sm w-full peer-checked:btn-primary">Einpassen</div>
-					</label>
+				<label class="text-sm text-base-content/60 block mb-2">
+					Zoom: {Math.round(zoom * 100)}%
+				</label>
+				<input
+					type="range"
+					min="0.5"
+					max="2"
+					step="0.05"
+					bind:value={zoom}
+					class="range range-primary range-sm w-full"
+				/>
+				<div class="flex justify-between text-xs text-base-content/50 mt-1">
+					<span>50%</span>
+					<span>100%</span>
+					<span>200%</span>
 				</div>
+				{#if zoom < 1}
+					<p class="text-xs text-base-content/50 mt-2">
+						Bild wird mit Rand dargestellt
+					</p>
+				{:else if zoom > 1}
+					<p class="text-xs text-base-content/50 mt-2">
+						Bild wird beschnitten (ziehen zum Verschieben)
+					</p>
+				{/if}
 			</div>
 
-			<!-- Zoom slider (only for cover mode) -->
-			{#if fitMode === 'cover'}
-				<div>
-					<label class="text-sm text-base-content/60 block mb-2">
-						Zoom: {Math.round(zoom * 100)}%
-					</label>
+			<!-- Background color -->
+			<div>
+				<label class="text-sm text-base-content/60 block mb-2">Hintergrundfarbe</label>
+				<div class="flex items-center gap-2">
 					<input
-						type="range"
-						min="0.5"
-						max="2"
-						step="0.1"
-						bind:value={zoom}
-						class="range range-primary range-sm w-full"
+						type="color"
+						bind:value={backgroundColor}
+						class="w-10 h-10 rounded cursor-pointer border border-base-300"
 					/>
-					<div class="flex justify-between text-xs text-base-content/50 mt-1">
-						<span>50%</span>
-						<span>200%</span>
-					</div>
+					<input
+						type="text"
+						bind:value={backgroundColor}
+						class="input input-bordered input-sm flex-1 font-mono uppercase"
+						pattern="^#[0-9A-Fa-f]{6}$"
+					/>
 				</div>
-			{/if}
-
-			<!-- Background color (only for contain mode) -->
-			{#if fitMode === 'contain'}
-				<div>
-					<label class="text-sm text-base-content/60 block mb-2">Hintergrundfarbe</label>
-					<div class="flex items-center gap-2">
-						<input
-							type="color"
-							bind:value={backgroundColor}
-							class="w-10 h-10 rounded cursor-pointer border border-base-300"
-						/>
-						<input
-							type="text"
-							bind:value={backgroundColor}
-							class="input input-bordered input-sm flex-1 font-mono uppercase"
-							pattern="^#[0-9A-Fa-f]{6}$"
-						/>
-					</div>
-					<!-- Quick color presets -->
-					<div class="flex gap-1 mt-2">
-						{#each ['#ffffff', '#000000', '#1f2937', '#f3f4f6'] as color}
-							<button
-								class="w-6 h-6 rounded border border-base-300"
-								style="background-color: {color};"
-								onclick={() => (backgroundColor = color)}
-								title={color}
-							></button>
-						{/each}
-					</div>
+				<!-- Quick color presets -->
+				<div class="flex gap-1 mt-2">
+					{#each ['#ffffff', '#000000', '#1f2937', '#f3f4f6'] as color}
+						<button
+							class="w-6 h-6 rounded border border-base-300"
+							style="background-color: {color};"
+							onclick={() => (backgroundColor = color)}
+							title={color}
+						></button>
+					{/each}
 				</div>
-			{/if}
+			</div>
 
 			<!-- Reset button -->
 			<button class="btn btn-ghost btn-sm w-full" onclick={handleReset}>

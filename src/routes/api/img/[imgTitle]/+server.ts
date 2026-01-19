@@ -211,18 +211,47 @@ export const PATCH: RequestHandler = async ({ locals, params, request }) => {
 
 		let processedBuffer: Buffer;
 
-		if (settings.fitMode === 'contain') {
-			// Contain mode: fit image inside with background color padding
-			processedBuffer = await sharp(originalBuffer)
+		// Parse hex color to RGB object
+		const hexToRgb = (hex: string) => {
+			const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+			return result ? {
+				r: parseInt(result[1], 16),
+				g: parseInt(result[2], 16),
+				b: parseInt(result[3], 16),
+				alpha: 1
+			} : { r: 255, g: 255, b: 255, alpha: 1 };
+		};
+
+		if (settings.zoom < 1) {
+			// Zoom < 100%: Scale down image and add colored padding
+			// Calculate the scaled dimensions (how big the image should appear)
+			const scaledWidth = Math.round(targetWidth * settings.zoom);
+			const scaledHeight = Math.round(targetHeight * settings.zoom);
+
+			// First resize the original to fit within the scaled dimensions
+			const resizedImage = await sharp(originalBuffer)
 				.resize({
-					width: targetWidth,
-					height: targetHeight,
-					fit: 'contain',
-					background: settings.backgroundColor
+					width: scaledWidth,
+					height: scaledHeight,
+					fit: 'inside'
 				})
 				.toBuffer();
+
+			// Create background canvas with the specified color
+			const bgColor = hexToRgb(settings.backgroundColor);
+			processedBuffer = await sharp({
+				create: {
+					width: targetWidth,
+					height: targetHeight,
+					channels: 4,
+					background: bgColor
+				}
+			})
+				.composite([{ input: resizedImage, gravity: 'center' }])
+				.png()
+				.toBuffer();
 		} else {
-			// Cover mode with zoom and offset
+			// Zoom >= 100%: Cover mode with crop and offset
 			const origAspect = origWidth / origHeight;
 
 			// Calculate base crop dimensions (before zoom)
@@ -239,7 +268,7 @@ export const PATCH: RequestHandler = async ({ locals, params, request }) => {
 				baseHeight = Math.round(origWidth / targetAspect);
 			}
 
-			// Apply zoom (smaller zoom = larger source region = more visible)
+			// Apply zoom (larger zoom = smaller source region = more cropped)
 			const zoomedWidth = Math.round(baseWidth / settings.zoom);
 			const zoomedHeight = Math.round(baseHeight / settings.zoom);
 

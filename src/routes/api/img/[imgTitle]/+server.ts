@@ -180,13 +180,13 @@ export const PATCH: RequestHandler = async ({ locals, params, request }) => {
 			return new Response('Invalid backgroundColor (must be hex color)', { status: 400 });
 		}
 
-		// Fetch original image from database
-		const result = await new Promise<{ extension: string; image: string } | undefined>(
+		// Fetch image from database (prefer original if available)
+		const result = await new Promise<{ extension: string; image: string; originalImage?: string } | undefined>(
 			(resolve, reject) => {
-				db.get<Image>(
-					'SELECT extension, image FROM image WHERE title = ?',
+				db.get<Image & { originalImage?: string }>(
+					'SELECT extension, image, originalImage FROM image WHERE title = ?',
 					[params.imgTitle],
-					(err: Error | null, row: Image) => {
+					(err: Error | null, row: Image & { originalImage?: string }) => {
 						if (err) reject(err);
 						else resolve(row as typeof result);
 					}
@@ -198,7 +198,9 @@ export const PATCH: RequestHandler = async ({ locals, params, request }) => {
 			return new Response('Image not found', { status: 404 });
 		}
 
-		const originalBuffer = Buffer.from(result.image, 'base64');
+		// Use original image if available, otherwise fall back to processed image
+		const sourceImage = result.originalImage || result.image;
+		const originalBuffer = Buffer.from(sourceImage, 'base64');
 		const metadata = await sharp(originalBuffer).metadata();
 		const origWidth = metadata.width || 1200;
 		const origHeight = metadata.height || 900;

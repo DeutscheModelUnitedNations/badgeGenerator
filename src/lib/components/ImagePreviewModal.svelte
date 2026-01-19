@@ -35,6 +35,9 @@
 
 		const updatedImage: ImageListItem = await response.json();
 
+		// Add cache-busting timestamp to URL
+		updatedImage.url = `${updatedImage.url}?v=${Date.now()}`;
+
 		isEditing = false;
 		onEdit?.(updatedImage);
 	}
@@ -99,11 +102,13 @@
 				<!-- View mode -->
 				<!-- Image container -->
 				<div class="flex-1 flex items-center justify-center bg-base-200 p-4 min-h-[300px]">
-					<img
-						src={image.url}
-						alt={image.title}
-						class="max-w-full max-h-[70vh] object-contain"
-					/>
+					{#key image.url}
+						<img
+							src={image.url}
+							alt={image.title}
+							class="max-w-full max-h-[70vh] object-contain"
+						/>
+					{/key}
 				</div>
 
 				<!-- Info sidebar -->

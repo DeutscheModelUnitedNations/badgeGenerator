@@ -18,6 +18,7 @@
 
 	// UI state
 	let isSaving = $state(false);
+	let errorMessage = $state('');
 	let isDragging = $state(false);
 	let dragStartX = $state(0);
 	let dragStartY = $state(0);
@@ -26,6 +27,11 @@
 
 	// Preview container ref
 	let previewContainer: HTMLDivElement;
+
+	// Add cache-busting to image URL
+	let imageUrl = $derived(
+		image.url.includes('?') ? `${image.url}&editor=1` : `${image.url}?editor=${Date.now()}`
+	);
 
 	// Compute preview styles based on settings
 	let previewStyle = $derived(() => {
@@ -60,6 +66,7 @@
 
 	async function handleSave() {
 		isSaving = true;
+		errorMessage = '';
 		try {
 			await onSave({
 				fitMode,
@@ -68,6 +75,9 @@
 				offsetY,
 				backgroundColor
 			});
+		} catch (err) {
+			errorMessage = err instanceof Error ? err.message : 'Speichern fehlgeschlagen';
+			console.error('Save error:', err);
 		} finally {
 			isSaving = false;
 		}
@@ -124,7 +134,7 @@
 			<!-- Draggable image -->
 			<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 			<img
-				src={image.url}
+				src={imageUrl}
 				alt={image.title}
 				class="w-full h-full {fitMode === 'cover' ? 'cursor-move' : ''}"
 				style="object-fit: {previewStyle().objectFit}; object-position: {previewStyle().objectPosition}; transform: {previewStyle().transform};"
@@ -232,6 +242,16 @@
 				Zurücksetzen
 			</button>
 		</div>
+
+		<!-- Error message -->
+		{#if errorMessage}
+			<div class="alert alert-error text-sm">
+				<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+				</svg>
+				<span>{errorMessage}</span>
+			</div>
+		{/if}
 
 		<!-- Action buttons -->
 		<div class="mt-6 space-y-2">

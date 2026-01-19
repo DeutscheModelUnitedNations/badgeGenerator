@@ -30,7 +30,8 @@ const migrationColumns = [
 	{ name: 'createdAt', type: 'TEXT' },
 	{ name: 'width', type: 'INTEGER' },
 	{ name: 'height', type: 'INTEGER' },
-	{ name: 'fileSize', type: 'INTEGER' }
+	{ name: 'fileSize', type: 'INTEGER' },
+	{ name: 'originalImage', type: 'TEXT' }
 ];
 
 for (const col of migrationColumns) {

@@ -92,7 +92,7 @@ class PDFPlacardGenerator {
 			});
 		}
 
-		let brandLogo;
+		let brandLogo: string | undefined;
 
 		switch (this.brand) {
 			case 'MUN-SH':
@@ -106,7 +106,7 @@ class PDFPlacardGenerator {
 				break;
 		}
 
-		const { img: brandLogoImage } = await fetchUint8Array(brandLogo);
+		const brandLogoImage = brandLogo ? (await fetchUint8Array(brandLogo)).img : undefined;
 
 		const LOGO_DISTANCE_FROM_VERTICAL_MIDDLE = 160;
 		const LOGO_DISTANCE_FROM_HORIZONTAL_MIDDLE = 250;

@@ -59,7 +59,7 @@
 		type="text"
 		placeholder="Bildname (optional, Dateiendung wird automatisch ergänzt)"
 		bind:value={imgTitle}
-		class="input join-item input-bordered input-primary"
+		class="input join-item input-primary"
 	/>
 	<button class="btn btn-primary join-item" onclick={() => imgInput.click()}>Bild hochladen</button>
 </div>

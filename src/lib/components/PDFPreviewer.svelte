@@ -26,7 +26,7 @@
 	async function generatePreview() {
 		try {
 			const pdfBytes = await generatePDF(fileData, brand, type);
-			const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+			const blob = new Blob([new Uint8Array(pdfBytes)], { type: 'application/pdf' });
 			pdfUrl = URL.createObjectURL(blob);
 		} catch (error) {
 			console.error('Error generating preview:', error);
@@ -106,6 +106,7 @@
 			</div>
 		{/if}
 		<button class="btn btn-primary w-full max-w-lg" disabled={loading} onclick={generate}>
+			<i class="fa-solid fa-wand-magic-sparkles w-5 h-5"></i>
 			Generate PDF
 		</button>
 		<div class="alert w-auto">
@@ -125,13 +126,21 @@
 			</div>
 		</div>
 	{:else}
-		<div class="alert alert-warning !flex w-auto !flex-col !items-center !justify-center">
-			<div class="text-center">
-				<strong>Warnungen</strong><br />Bei der PDF-Erstellung sind ein paar Warnungen aufgetreten.
-				Bitte prüfe sie gründlich.
+		{#if getWarnings().length > 0}
+			<div class="alert alert-warning !flex w-auto !flex-col !items-center !justify-center">
+				<div class="text-center">
+					<strong>Warnungen</strong><br />Bei der PDF-Erstellung sind ein paar Warnungen aufgetreten.
+					Bitte prüfe sie gründlich.
+				</div>
+				<WarningTable errors={getWarnings()} />
 			</div>
-			<WarningTable errors={getWarnings()} />
-		</div>
+		{:else}
+			<div class="alert alert-success w-auto">
+				<div class="text-center">
+					<strong>PDF erfolgreich erstellt!</strong>
+				</div>
+			</div>
+		{/if}
 		<button
 			class="btn btn-primary w-full max-w-lg"
 			onclick={() => {
@@ -141,6 +150,7 @@
 				link.click();
 			}}
 		>
+			<i class="fa-solid fa-download w-5 h-5"></i>
 			Download PDF
 		</button>
 		<embed src={pdfUrl} type="application/pdf" class=" h-[80vh] w-full rounded-lg bg-white" />

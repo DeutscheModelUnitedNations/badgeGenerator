@@ -77,20 +77,7 @@
 		<div class="p-4 border-b border-base-300 flex justify-between items-center">
 			<h3 class="text-lg font-semibold">Bild auswählen</h3>
 			<button class="btn btn-ghost btn-sm btn-circle" onclick={onClose} aria-label="Schließen">
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					class="h-5 w-5"
-					fill="none"
-					viewBox="0 0 24 24"
-					stroke="currentColor"
-				>
-					<path
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						stroke-width="2"
-						d="M6 18L18 6M6 6l12 12"
-					/>
-				</svg>
+				<i class="fa-solid fa-xmark w-5 h-5"></i>
 			</button>
 		</div>
 

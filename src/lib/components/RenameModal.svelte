@@ -109,6 +109,8 @@
 					<button type="submit" class="btn btn-primary" disabled={isSubmitting}>
 						{#if isSubmitting}
 							<span class="loading loading-spinner loading-sm"></span>
+						{:else}
+							<i class="fa-solid fa-check w-4 h-4"></i>
 						{/if}
 						Speichern
 					</button>

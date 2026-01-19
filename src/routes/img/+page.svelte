@@ -146,20 +146,7 @@
 	<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
 		<div class="flex items-center gap-3">
 			<a href="/" class="btn btn-ghost btn-sm" aria-label="Zurück zur Startseite">
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					class="h-5 w-5"
-					fill="none"
-					viewBox="0 0 24 24"
-					stroke="currentColor"
-				>
-					<path
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						stroke-width="2"
-						d="M10 19l-7-7m0 0l7-7m-7 7h18"
-					/>
-				</svg>
+				<i class="fa-solid fa-arrow-left w-5 h-5"></i>
 			</a>
 			<h1 class="text-2xl font-bold">Bilderliste</h1>
 			<span class="badge badge-ghost">{data.images.length}</span>
@@ -168,20 +155,7 @@
 
 	<!-- Info alert -->
 	<div class="alert mb-6">
-		<svg
-			xmlns="http://www.w3.org/2000/svg"
-			class="h-5 w-5 shrink-0"
-			fill="none"
-			viewBox="0 0 24 24"
-			stroke="currentColor"
-		>
-			<path
-				stroke-linecap="round"
-				stroke-linejoin="round"
-				stroke-width="2"
-				d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-			/>
-		</svg>
+		<i class="fa-solid fa-circle-info w-5 h-5 shrink-0"></i>
 		<div>
 			<p>
 				Nutze den Bildnamen in der Spalte <strong>"alternativeImage"</strong> deiner Datentabelle (ohne
@@ -215,20 +189,7 @@
 		<!-- Sort dropdown -->
 		<div class="dropdown dropdown-end">
 			<div tabindex="0" role="button" class="btn btn-ghost gap-2">
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					class="h-4 w-4"
-					fill="none"
-					viewBox="0 0 24 24"
-					stroke="currentColor"
-				>
-					<path
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						stroke-width="2"
-						d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"
-					/>
-				</svg>
+				<i class="fa-solid fa-arrow-up-wide-short w-4 h-4"></i>
 				Sortieren
 			</div>
 			<ul class="dropdown-content z-10 menu p-2 shadow bg-base-100 rounded-box w-52">
@@ -262,40 +223,14 @@
 				onclick={() => setViewMode('grid')}
 				title="Rasteransicht"
 			>
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					class="h-4 w-4"
-					fill="none"
-					viewBox="0 0 24 24"
-					stroke="currentColor"
-				>
-					<path
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						stroke-width="2"
-						d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
-					/>
-				</svg>
+				<i class="fa-solid fa-grid-2 w-4 h-4"></i>
 			</button>
 			<button
 				class="btn btn-sm join-item {viewMode === 'table' ? 'btn-active' : ''}"
 				onclick={() => setViewMode('table')}
 				title="Listenansicht"
 			>
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					class="h-4 w-4"
-					fill="none"
-					viewBox="0 0 24 24"
-					stroke="currentColor"
-				>
-					<path
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						stroke-width="2"
-						d="M4 6h16M4 10h16M4 14h16M4 18h16"
-					/>
-				</svg>
+				<i class="fa-solid fa-list w-4 h-4"></i>
 			</button>
 		</div>
 	</div>

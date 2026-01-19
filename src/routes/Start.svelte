@@ -143,18 +143,20 @@
 <div role="tablist" class="tabs tabs-box w-full max-w-lg">
 	<button
 		role="tab"
-		class="tab"
+		class="tab flex-1"
 		class:tab-active={mode === 'file'}
 		onclick={() => (mode = 'file')}
 	>
+		<i class="fa-solid fa-file-arrow-up w-4 h-4 mr-2"></i>
 		Datei-Upload
 	</button>
 	<button
 		role="tab"
-		class="tab"
+		class="tab flex-1"
 		class:tab-active={mode === 'single'}
 		onclick={() => (mode = 'single')}
 	>
+		<i class="fa-solid fa-keyboard w-4 h-4 mr-2"></i>
 		Einzeleingabe
 	</button>
 </div>
@@ -185,6 +187,7 @@
 	<h3 class="text-xl">Beispieldatei</h3>
 	<div class="join">
 		<a href="/sample/badges.csv" download="sample-badges.csv" class="btn btn-primary join-item">
+			<i class="fa-solid fa-download w-4 h-4"></i>
 			CSV
 		</a>
 	</div>
@@ -206,23 +209,25 @@
 		<!-- Country input mode toggle -->
 		<fieldset class="fieldset w-full">
 			<legend class="fieldset-legend">Land *</legend>
-			<div role="tablist" class="tabs tabs-box tabs-sm mb-2">
+			<div role="tablist" class="tabs tabs-box tabs-sm mb-2 w-full">
 				<button
 					type="button"
 					role="tab"
-					class="tab"
+					class="tab flex-1"
 					class:tab-active={countryInputMode === 'country'}
 					onclick={() => switchCountryInputMode('country')}
 				>
+					<i class="fa-solid fa-flag w-3 h-3 mr-1"></i>
 					Land
 				</button>
 				<button
 					type="button"
 					role="tab"
-					class="tab"
+					class="tab flex-1"
 					class:tab-active={countryInputMode === 'image'}
 					onclick={() => switchCountryInputMode('image')}
 				>
+					<i class="fa-solid fa-image w-3 h-3 mr-1"></i>
 					Bild
 				</button>
 			</div>
@@ -238,6 +243,7 @@
 						readonly
 					/>
 					<button type="button" class="btn btn-primary" onclick={() => showCountryModal = true}>
+						<i class="fa-solid fa-magnifying-glass w-4 h-4"></i>
 						Suchen
 					</button>
 				</div>
@@ -266,6 +272,7 @@
 						readonly
 					/>
 					<button type="button" class="btn btn-primary" onclick={() => showImageModal = true}>
+						<i class="fa-solid fa-magnifying-glass w-4 h-4"></i>
 						Suchen
 					</button>
 				</div>
@@ -324,6 +331,7 @@
 			disabled={!name || !countryName || (countryInputMode === 'image' ? !alternativeImage : !countryAlpha2Code)}
 		>
 			Schild erstellen
+			<i class="fa-solid fa-arrow-right w-4 h-4"></i>
 		</button>
 	</form>
 {/if}
@@ -351,4 +359,7 @@
 
 <div class="divider mx-auto w-full max-w-lg"></div>
 
-<a href="/img" class="btn btn-primary w-full max-w-lg">Bilderliste</a>
+<a href="/img" class="btn btn-primary w-full max-w-lg">
+	<i class="fa-solid fa-images w-5 h-5"></i>
+	Bilderliste
+</a>

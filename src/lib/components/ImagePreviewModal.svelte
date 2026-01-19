@@ -35,9 +35,6 @@
 
 		const updatedImage: ImageListItem = await response.json();
 
-		// Add cache-busting timestamp to URL
-		updatedImage.url = `${updatedImage.url}?v=${Date.now()}`;
-
 		isEditing = false;
 		onEdit?.(updatedImage);
 	}
@@ -102,9 +99,9 @@
 				<!-- View mode -->
 				<!-- Image container -->
 				<div class="flex-1 flex items-center justify-center bg-base-200 p-4 min-h-[300px]">
-					{#key image.url}
+					{#key `${image.url}-${image.fileSize}`}
 						<img
-							src={image.url}
+							src="{image.url}?v={image.fileSize}"
 							alt={image.title}
 							class="max-w-full max-h-[70vh] object-contain"
 						/>
@@ -116,20 +113,7 @@
 					<div class="flex justify-between items-start mb-4">
 						<h3 class="text-lg font-semibold break-all pr-2">{image.title}</h3>
 						<button class="btn btn-ghost btn-sm btn-circle" onclick={onClose} aria-label="Close">
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								class="h-5 w-5"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke="currentColor"
-							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M6 18L18 6M6 6l12 12"
-								/>
-							</svg>
+							<i class="fa-solid fa-xmark w-5 h-5"></i>
 						</button>
 					</div>
 
@@ -163,37 +147,11 @@
 
 					<div class="mt-6 space-y-2">
 						<button class="btn btn-outline btn-block" onclick={() => (isEditing = true)}>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								class="h-4 w-4"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke="currentColor"
-							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-								/>
-							</svg>
+							<i class="fa-solid fa-pen-to-square w-4 h-4"></i>
 							Bearbeiten
 						</button>
-						<a href={image.url} download="{image.title}.{image.extension}" class="btn btn-primary btn-block">
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								class="h-4 w-4"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke="currentColor"
-							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-								/>
-							</svg>
+						<a href="{image.url}?v={image.fileSize}" download="{image.title}.{image.extension}" class="btn btn-primary btn-block">
+							<i class="fa-solid fa-download w-4 h-4"></i>
 							Herunterladen
 						</a>
 					</div>

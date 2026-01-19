@@ -10,9 +10,9 @@
 	<div class="mt-6 text-sm">
 		Copyright © 2024–{new Date().getFullYear()}
 		<a href="https://github.com/deutschemodelunitednations" class="hover:underline"
-			>Deutsche Model United Nations e.V.</a
+			><i class="fa-brands fa-github"></i> Deutsche Model United Nations e.V.</a
 		>
-		/ <a href="https://github.com/strehk" class="hover:underline">Tade Strehk</a>
+		/ <a href="https://github.com/strehk" class="hover:underline"><i class="fa-brands fa-github"></i> Tade Strehk</a>
 	</div>
 	<div class="text-sm ">Made with ❤️ in Germany</div>
 	<div class="mt-4 text-sm">

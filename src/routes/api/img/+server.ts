@@ -68,8 +68,8 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			.resize({
 				width: 1200,
 				height: 900,
-				background: extension === 'png' ? undefined : '#ffffff',
-				fit: 'cover'
+				background: '#ffffff',
+				fit: 'contain'
 			})
 			.toBuffer();
 

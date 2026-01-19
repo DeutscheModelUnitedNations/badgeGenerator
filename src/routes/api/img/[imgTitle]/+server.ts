@@ -237,18 +237,32 @@ export const PATCH: RequestHandler = async ({ locals, params, request }) => {
 				})
 				.toBuffer();
 
-			// Create background canvas with the specified color
+			// Create background canvas with the specified color and composite the image
 			const bgColor = hexToRgb(settings.backgroundColor);
-			processedBuffer = await sharp({
+			const canvas = sharp({
 				create: {
 					width: targetWidth,
 					height: targetHeight,
 					channels: 4,
 					background: bgColor
 				}
-			})
-				.composite([{ input: resizedImage, gravity: 'center' }])
-				.png()
+			}).composite([{ input: resizedImage, gravity: 'center' }]);
+
+			// Output in the same format as original
+			if (result.extension === 'png') {
+				processedBuffer = await canvas.png().toBuffer();
+			} else {
+				processedBuffer = await canvas.jpeg({ quality: 90 }).toBuffer();
+			}
+		} else if (settings.zoom === 1) {
+			// Zoom exactly 100%: Use contain to fit image with padding (same as upload)
+			processedBuffer = await sharp(originalBuffer)
+				.resize({
+					width: targetWidth,
+					height: targetHeight,
+					fit: 'contain',
+					background: hexToRgb(settings.backgroundColor)
+				})
 				.toBuffer();
 		} else {
 			// Zoom >= 100%: Cover mode with crop and offset

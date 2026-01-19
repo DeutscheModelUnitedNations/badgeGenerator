@@ -106,6 +106,7 @@
 			</div>
 		{/if}
 		<button class="btn btn-primary w-full max-w-lg" disabled={loading} onclick={generate}>
+			<i class="fa-solid fa-wand-magic-sparkles w-5 h-5"></i>
 			Generate PDF
 		</button>
 		<div class="alert w-auto">
@@ -149,6 +150,7 @@
 				link.click();
 			}}
 		>
+			<i class="fa-solid fa-download w-5 h-5"></i>
 			Download PDF
 		</button>
 		<embed src={pdfUrl} type="application/pdf" class=" h-[80vh] w-full rounded-lg bg-white" />

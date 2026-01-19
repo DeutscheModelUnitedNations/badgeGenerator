@@ -1,13 +1,72 @@
 <script lang="ts">
-	import { type TableSchema } from '$lib/tableSchema';
+	import { type TableSchema, type TableRow } from '$lib/tableSchema';
 	import * as XLSX from 'xlsx';
 	import ImageUploader from '$lib/components/ImageUploader.svelte';
+	import WorldCountries from 'world-countries';
 
 	interface Props {
 		setFileData: (data: TableSchema) => void;
 	}
 
 	let { setFileData }: Props = $props();
+
+	// Mode state: 'file' for file upload, 'single' for single entry
+	let mode = $state<'file' | 'single'>('file');
+
+	// Form fields for single mode
+	let name = $state('');
+	let countryName = $state('');
+	let countryAlpha2Code = $state('');
+	let committee = $state('');
+	let pronouns = $state('');
+	let mediaConsentStatus = $state<'NOT_SET' | 'NOT_ALLOWED' | 'PARTIALLY_ALLOWED' | 'ALLOWED_ALL'>('NOT_SET');
+
+	// Country input mode: 'select' for dropdown, 'input' for manual entry
+	let countryInputMode = $state<'select' | 'input'>('select');
+
+	// Country options for dropdown
+	const countryOptions = [
+		{ name: 'Vereinte Nationen (UN)', code: 'UN' },
+		...WorldCountries.map((c) => ({
+			name: c.translations.deu?.common ?? c.name.common,
+			code: c.cca2
+		})).sort((a, b) => a.name.localeCompare(b.name, 'de'))
+	];
+
+	// Handle country selection
+	function handleCountrySelect(code: string) {
+		countryAlpha2Code = code;
+		if (code === 'UN') {
+			countryName = 'Vereinte Nationen';
+		} else {
+			const country = WorldCountries.find((c) => c.cca2 === code);
+			if (country) {
+				countryName = country.translations.deu?.common ?? country.name.common;
+			}
+		}
+	}
+
+	// Reset country fields when switching input mode
+	function switchCountryInputMode(newMode: 'select' | 'input') {
+		countryInputMode = newMode;
+		countryName = '';
+		countryAlpha2Code = '';
+	}
+
+	// Submit handler for single mode
+	function submitSingle() {
+		if (!name || !countryName || !countryAlpha2Code) return;
+
+		const entry: TableRow = {
+			name,
+			countryName,
+			countryAlpha2Code: countryAlpha2Code || undefined,
+			committee: committee || undefined,
+			pronouns: pronouns || undefined,
+			mediaConsentStatus
+		};
+		setFileData([entry]);
+	}
 
 	function parseFileToJson(buffer: ArrayBuffer, filename: string): TableSchema {
 		const isCSV = filename.toLowerCase().endsWith('.csv');
@@ -23,34 +82,187 @@
 
 <h1 class="text-4xl">Namens- und Länderschilder</h1>
 
-<h3 class="text-xl">Quelldatei (.xlsx oder .csv) hier ablegen</h3>
-<input
-	type="file"
-	accept=".xlsx,.csv"
-	multiple={false}
-	class="file-input file-input-bordered file-input-primary w-full max-w-lg"
-	onchange={(e) => {
-		const f = (e.target as HTMLInputElement).files?.[0];
-		if (f) {
-			const reader = new FileReader();
-			reader.onload = (e) => {
-				const buffer = e.target?.result as ArrayBuffer;
-				setFileData(parseFileToJson(buffer, f.name));
-			};
-			reader.readAsArrayBuffer(f);
-		}
-	}}
-/>
+<!-- Mode toggle tabs -->
+<div role="tablist" class="tabs tabs-boxed w-full max-w-lg">
+	<button
+		role="tab"
+		class="tab"
+		class:tab-active={mode === 'file'}
+		onclick={() => (mode = 'file')}
+	>
+		Datei-Upload
+	</button>
+	<button
+		role="tab"
+		class="tab"
+		class:tab-active={mode === 'single'}
+		onclick={() => (mode = 'single')}
+	>
+		Einzeleingabe
+	</button>
+</div>
+
+{#if mode === 'file'}
+	<!-- File upload mode -->
+	<h3 class="text-xl">Quelldatei (.xlsx oder .csv) hier ablegen</h3>
+	<input
+		type="file"
+		accept=".xlsx,.csv"
+		multiple={false}
+		class="file-input file-input-bordered file-input-primary w-full max-w-lg"
+		onchange={(e) => {
+			const f = (e.target as HTMLInputElement).files?.[0];
+			if (f) {
+				const reader = new FileReader();
+				reader.onload = (e) => {
+					const buffer = e.target?.result as ArrayBuffer;
+					setFileData(parseFileToJson(buffer, f.name));
+				};
+				reader.readAsArrayBuffer(f);
+			}
+		}}
+	/>
+
+	<div class="divider mx-auto w-full max-w-lg"></div>
+
+	<h3 class="text-xl">Beispieldatei</h3>
+	<div class="join">
+		<a href="/sample/badges.csv" download="sample-badges.csv" class="btn btn-primary join-item">
+			CSV
+		</a>
+	</div>
+{:else}
+	<!-- Single entry mode -->
+	<form class="w-full max-w-lg space-y-4" onsubmit={(e) => { e.preventDefault(); submitSingle(); }}>
+		<!-- Name (required) -->
+		<label class="form-control w-full">
+			<div class="label">
+				<span class="label-text">Name *</span>
+			</div>
+			<input
+				type="text"
+				placeholder="Max Mustermann"
+				class="input input-bordered w-full"
+				bind:value={name}
+				required
+			/>
+		</label>
+
+		<!-- Country input mode toggle -->
+		<div class="form-control w-full">
+			<div class="label">
+				<span class="label-text">Land *</span>
+			</div>
+			<div role="tablist" class="tabs tabs-boxed tabs-sm mb-2">
+				<button
+					type="button"
+					role="tab"
+					class="tab"
+					class:tab-active={countryInputMode === 'select'}
+					onclick={() => switchCountryInputMode('select')}
+				>
+					Auswahl
+				</button>
+				<button
+					type="button"
+					role="tab"
+					class="tab"
+					class:tab-active={countryInputMode === 'input'}
+					onclick={() => switchCountryInputMode('input')}
+				>
+					Eingabe
+				</button>
+			</div>
+
+			{#if countryInputMode === 'select'}
+				<!-- Country dropdown -->
+				<select
+					class="select select-bordered w-full"
+					onchange={(e) => handleCountrySelect((e.target as HTMLSelectElement).value)}
+					required
+				>
+					<option value="" disabled selected={!countryAlpha2Code}>Land auswählen...</option>
+					{#each countryOptions as country}
+						<option value={country.code} selected={countryAlpha2Code === country.code}>
+							{country.name}
+						</option>
+					{/each}
+				</select>
+			{:else}
+				<!-- Manual country input -->
+				<div class="flex gap-2">
+					<input
+						type="text"
+						placeholder="Ländername"
+						class="input input-bordered flex-1"
+						bind:value={countryName}
+						required
+					/>
+					<input
+						type="text"
+						placeholder="Code (z.B. DE)"
+						class="input input-bordered w-24"
+						bind:value={countryAlpha2Code}
+						maxlength="2"
+						required
+					/>
+				</div>
+				<div class="label">
+					<span class="label-text-alt">ISO 3166-1 alpha-2 Code oder "UN"</span>
+				</div>
+			{/if}
+		</div>
+
+		<!-- Committee (optional) -->
+		<label class="form-control w-full">
+			<div class="label">
+				<span class="label-text">Ausschuss</span>
+			</div>
+			<input
+				type="text"
+				placeholder="z.B. Generalversammlung"
+				class="input input-bordered w-full"
+				bind:value={committee}
+			/>
+		</label>
+
+		<!-- Pronouns (optional) -->
+		<label class="form-control w-full">
+			<div class="label">
+				<span class="label-text">Pronomen</span>
+			</div>
+			<input
+				type="text"
+				placeholder="z.B. sie/ihr"
+				class="input input-bordered w-full"
+				bind:value={pronouns}
+			/>
+		</label>
+
+		<!-- Media consent status (optional) -->
+		<label class="form-control w-full">
+			<div class="label">
+				<span class="label-text">Medienfreigabe</span>
+			</div>
+			<select class="select select-bordered w-full" bind:value={mediaConsentStatus}>
+				<option value="NOT_SET">Nicht festgelegt</option>
+				<option value="ALLOWED_ALL">Vollständig erlaubt</option>
+				<option value="PARTIALLY_ALLOWED">Teilweise erlaubt</option>
+				<option value="NOT_ALLOWED">Nicht erlaubt</option>
+			</select>
+		</label>
+
+		<!-- Submit button -->
+		<button
+			type="submit"
+			class="btn btn-primary w-full"
+			disabled={!name || !countryAlpha2Code}
+		>
+			Schild erstellen
+		</button>
+	</form>
+{/if}
 
 <div class="divider mx-auto w-full max-w-lg"></div>
 
 <a href="/img" class="btn btn-primary w-full max-w-lg">Bilderliste</a>
-
-<div class="divider mx-auto w-full max-w-lg"></div>
-
-<h3 class="text-xl">Beispieldatei</h3>
-<div class="join">
-	<a href="/sample/badges.csv" download="sample-badges.csv" class="btn btn-primary join-item">
-		CSV
-	</a>
-</div>

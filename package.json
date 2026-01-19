@@ -3,6 +3,10 @@
 	"private": true,
 	"version": "0.0.1",
 	"type": "module",
+	"overrides": {
+		"tar": "^7.5.3",
+		"cookie": "^0.7.0"
+	},
 	"scripts": {
 		"dev": "vite dev",
 		"build": "bun run build:flags && bun run build:vite",
@@ -17,35 +21,35 @@
 	},
 	"devDependencies": {
 		"@deutschemodelunitednations/corporate-identity": "^1.1.10",
-		"@sveltejs/adapter-node": "^5.2.12",
-		"@sveltejs/kit": "^2.17.1",
-		"@sveltejs/vite-plugin-svelte": "^5.0.3",
-		"@tailwindcss/typography": "^0.5.16",
-		"@tailwindcss/vite": "^4.1.17",
+		"@sveltejs/adapter-node": "^5.5.1",
+		"@sveltejs/kit": "^2.50.0",
+		"@sveltejs/vite-plugin-svelte": "^5.1.1",
+		"@tailwindcss/typography": "^0.5.19",
+		"@tailwindcss/vite": "^4.1.18",
 		"@types/sqlite3": "^5.1.0",
-		"daisyui": "^5.5.5",
-		"flag-icons": "^7.3.2",
-		"jspdf": "^2.5.2",
+		"daisyui": "^5.5.14",
+		"flag-icons": "^7.5.0",
+		"jspdf": "^4.0.0",
 		"pdf-lib": "^1.17.1",
-		"prettier": "^3.4.2",
-		"prettier-plugin-svelte": "^3.3.3",
-		"prettier-plugin-tailwindcss": "^0.6.11",
+		"prettier": "^3.8.0",
+		"prettier-plugin-svelte": "^3.4.1",
+		"prettier-plugin-tailwindcss": "^0.6.14",
 		"replace-special-characters": "^1.2.7",
 		"sharp": "^0.33.5",
 		"sqlite3": "^5.1.7",
-		"svelte": "^5.19.9",
+		"svelte": "^5.47.0",
 		"svelte-adapter-bun": "^0.5.2",
-		"svelte-check": "^4.1.4",
+		"svelte-check": "^4.3.5",
 		"svg2img": "^1.0.0-beta.2",
-		"tailwindcss": "^4.1.17",
-		"typescript": "^5.7.3",
-		"vite": "^6.1.0",
+		"tailwindcss": "^4.1.18",
+		"typescript": "^5.9.3",
+		"vite": "^6.4.1",
 		"xlsx": "^0.18.5",
-		"zod": "^3.24.1"
+		"zod": "^3.25.76"
 	},
 	"dependencies": {
 		"@bwip-js/browser": "^4.8.0",
 		"svelte-persisted-state": "^1.2.0",
-		"world-countries": "^5.0.0"
+		"world-countries": "^5.1.0"
 	}
 }

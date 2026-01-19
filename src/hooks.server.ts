@@ -1,5 +1,17 @@
 import type { Handle } from '@sveltejs/kit';
 import sqlite3 from 'sqlite3';
+import { mkdirSync } from 'fs';
+
+// Ensure data directory exists
+const dataDir = process.env.DATA_DIR || './data';
+try {
+	mkdirSync(dataDir, { recursive: true });
+} catch {
+	// Directory already exists
+}
+
+const dbPath = `${dataDir}/db.sqlite`;
+console.info(`Database Hook: Using database at ${dbPath}`);
 
 const db = await new Promise<sqlite3.Database>((resolve) => {
 	function onResolve(err: Error | null) {
@@ -9,7 +21,7 @@ const db = await new Promise<sqlite3.Database>((resolve) => {
 		}
 		resolve(internaldb);
 	}
-	const internaldb = new sqlite3.Database('db.sqlite', onResolve);
+	const internaldb = new sqlite3.Database(dbPath, onResolve);
 });
 
 console.info('Database Hook: Creating table');

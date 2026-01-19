@@ -15,20 +15,63 @@ This repository contains a tool designed to generate Name Badges and Placards fo
 - Custom Image Support: Add a custom image to the badge or use built in flag library
 - Easy-to-use interface for generating printable tags
 
-## URL Parameters
+## External Integration
 
-You can pre-fill the single entry form using URL parameters. When any parameter is present, the form automatically switches to single entry mode.
+To link users from your app to the badge generator with pre-filled data, use the token-based session API. This approach protects PII by using short-lived opaque tokens instead of exposing data in URL parameters.
 
-| Parameter | Description | Example |
-|-----------|-------------|---------|
-| `name` | Person's full name | `Max Mustermann` |
-| `country` | ISO 3166-1 alpha-2 code or "UN" | `DE`, `US`, `UN` |
-| `committee` | Committee name | `Generalversammlung` |
-| `pronouns` | Pronouns | `sie/ihr` |
-| `id` | Unique identifier | `12345` |
-| `media` | Media consent | `NOT_SET`, `NOT_ALLOWED`, `PARTIALLY_ALLOWED`, `ALLOWED_ALL` |
+### HTML Form (Recommended)
 
-**Example:** `/?name=Max%20Mustermann&country=DE&committee=GA`
+The simplest integration method - no JavaScript required:
+
+```html
+<form action="https://badges.dmun.de/api/session/create" method="POST">
+  <input type="hidden" name="name" value="Max Mustermann">
+  <input type="hidden" name="countryName" value="Deutschland">
+  <input type="hidden" name="countryAlpha2Code" value="DE">
+  <input type="hidden" name="committee" value="Generalversammlung">
+  <input type="hidden" name="pronouns" value="er/ihm">
+  <input type="hidden" name="id" value="12345">
+  <input type="hidden" name="mediaConsentStatus" value="ALLOWED_ALL">
+  <button type="submit">Badge erstellen</button>
+</form>
+```
+
+The form POST creates a session and redirects the user to `/?t={token}` with the form pre-filled.
+
+### JSON API (for JavaScript apps)
+
+For applications that need programmatic access:
+
+```javascript
+async function openBadgeGenerator(userData) {
+  const response = await fetch('https://badges.dmun.de/api/session', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(userData)
+  });
+  const { token, url } = await response.json();
+  window.location.href = url;
+}
+```
+
+### Supported Fields
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `name` | Yes | Person's full name |
+| `countryName` | Yes | Display name (e.g., "Deutschland") |
+| `countryAlpha2Code` | No* | ISO 3166-1 alpha-2 code or "UN" |
+| `alternativeImage` | No* | Custom image name from image library |
+| `committee` | No | Committee name |
+| `pronouns` | No | Pronouns (e.g., "sie/ihr") |
+| `id` | No | ID number |
+| `mediaConsentStatus` | No | `NOT_SET`, `NOT_ALLOWED`, `PARTIALLY_ALLOWED`, `ALLOWED_ALL` |
+
+*Either `countryAlpha2Code` or `alternativeImage` should be provided.
+
+### Token Expiry
+
+Links expire after 15 minutes for privacy protection. Users will see a warning if they try to use an expired link.
 
 ## FAQ
 

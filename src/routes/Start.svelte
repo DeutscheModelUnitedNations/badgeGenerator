@@ -11,11 +11,13 @@
 		setFileData: (data: TableSchema) => void;
 		initialParams?: {
 			name?: string;
-			country?: string;
+			countryName?: string;
+			countryAlpha2Code?: string;
+			alternativeImage?: string;
 			committee?: string;
 			pronouns?: string;
 			id?: string;
-			media?: string;
+			mediaConsentStatus?: string;
 		};
 		hasUrlParams?: boolean;
 	}
@@ -114,21 +116,37 @@
 		return XLSX.utils.sheet_to_json(firstSheet);
 	}
 
-	// Initialize form from URL params
+	// Initialize form from session data
 	onMount(() => {
 		if (hasUrlParams && initialParams) {
 			mode = 'single';
 			if (initialParams.name) name = initialParams.name;
-			if (initialParams.country) {
-				const code = initialParams.country.toUpperCase();
+
+			// Handle country or alternative image
+			if (initialParams.alternativeImage) {
+				countryInputMode = 'image';
+				alternativeImage = initialParams.alternativeImage;
+				if (initialParams.countryName) countryName = initialParams.countryName;
+			} else if (initialParams.countryAlpha2Code) {
+				const code = initialParams.countryAlpha2Code.toUpperCase();
 				countryAlpha2Code = code;
 				handleCountrySelect(code);
+				// If a custom country name was provided, use it as override
+				if (initialParams.countryName) {
+					const defaultName = code === 'UN' ? 'Vereinte Nationen' :
+						WorldCountries.find((c) => c.cca2 === code)?.translations.deu?.common ??
+						WorldCountries.find((c) => c.cca2 === code)?.name.common;
+					if (initialParams.countryName !== defaultName) {
+						countryNameOverride = initialParams.countryName;
+					}
+				}
 			}
+
 			if (initialParams.committee) committee = initialParams.committee;
 			if (initialParams.pronouns) pronouns = initialParams.pronouns;
 			if (initialParams.id) id = initialParams.id;
-			if (initialParams.media) {
-				const mediaValue = initialParams.media.toUpperCase();
+			if (initialParams.mediaConsentStatus) {
+				const mediaValue = initialParams.mediaConsentStatus.toUpperCase();
 				if (['NOT_SET', 'NOT_ALLOWED', 'PARTIALLY_ALLOWED', 'ALLOWED_ALL'].includes(mediaValue)) {
 					mediaConsentStatus = mediaValue as typeof mediaConsentStatus;
 				}

@@ -24,14 +24,44 @@ const db = await new Promise<sqlite3.Database>((resolve) => {
 	const internaldb = new sqlite3.Database(dbPath, onResolve);
 });
 
-console.info('Database Hook: Creating table');
-const createTableQuery =
+console.info('Database Hook: Creating tables');
+const createImageTableQuery =
 	'CREATE TABLE IF NOT EXISTS image (title TEXT NOT NULL PRIMARY KEY, extension TEXT NOT NULL, image TEXT NOT NULL, createdAt TEXT, width INTEGER, height INTEGER, fileSize INTEGER)';
 await new Promise<void>((resolve) => {
-	db.run(createTableQuery, (err) => {
+	db.run(createImageTableQuery, (err) => {
 		if (err) {
-			console.error('Database Hook: Error creating table', err);
+			console.error('Database Hook: Error creating image table', err);
 			throw err;
+		}
+		resolve();
+	});
+});
+
+// Create sessions table for token-based URL parameters
+const createSessionsTableQuery = `
+	CREATE TABLE IF NOT EXISTS sessions (
+		token TEXT NOT NULL PRIMARY KEY,
+		data TEXT NOT NULL,
+		createdAt INTEGER NOT NULL,
+		expiresAt INTEGER NOT NULL
+	)
+`;
+await new Promise<void>((resolve) => {
+	db.run(createSessionsTableQuery, (err) => {
+		if (err) {
+			console.error('Database Hook: Error creating sessions table', err);
+			throw err;
+		}
+		resolve();
+	});
+});
+
+// Cleanup expired sessions on startup
+const cleanupSessionsQuery = 'DELETE FROM sessions WHERE expiresAt < ?';
+await new Promise<void>((resolve) => {
+	db.run(cleanupSessionsQuery, [Date.now()], (err) => {
+		if (err) {
+			console.error('Database Hook: Error cleaning up expired sessions', err);
 		}
 		resolve();
 	});

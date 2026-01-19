@@ -23,10 +23,6 @@ A web-based tool for generating printable name badges and placards for Model Uni
 
 ## For Users
 
-### Using the Hosted Version
-
-Visit [badges.dmun.de](https://badges.dmun.de) to use the generator directly.
-
 ### Input Data Format
 
 Your data source (CSV, XLSX, or Google Sheets) should contain these columns:
@@ -53,7 +49,7 @@ To link users from your application to the badge generator with pre-filled data,
 The simplest integration method — no JavaScript required:
 
 ```html
-<form action="https://badges.dmun.de/api/session/create" method="POST">
+<form action="https://your-instance.example.com/api/session/create" method="POST">
   <input type="hidden" name="name" value="Max Mustermann">
   <input type="hidden" name="countryName" value="Deutschland">
   <input type="hidden" name="countryAlpha2Code" value="DE">
@@ -73,7 +69,7 @@ For applications that need programmatic access:
 
 ```javascript
 async function openBadgeGenerator(userData) {
-  const response = await fetch('https://badges.dmun.de/api/session', {
+  const response = await fetch('https://your-instance.example.com/api/session', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(userData)
@@ -99,8 +95,8 @@ Session tokens expire after 15 minutes for privacy protection. Users will see a 
 ### Quick Start
 
 ```bash
-git clone https://github.com/dmun-ev/badges.git
-cd badges
+git clone <repository-url>
+cd badge-generator
 bun install
 bun run dev
 ```

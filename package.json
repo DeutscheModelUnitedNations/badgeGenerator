@@ -43,6 +43,7 @@
 		"zod": "^3.24.1"
 	},
 	"dependencies": {
+		"@bwip-js/browser": "^4.8.0",
 		"world-countries": "^5.0.0"
 	}
 }

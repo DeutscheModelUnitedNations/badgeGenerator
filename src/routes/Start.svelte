@@ -19,6 +19,7 @@
 	let countryAlpha2Code = $state('');
 	let committee = $state('');
 	let pronouns = $state('');
+	let id = $state('');
 	let mediaConsentStatus = $state<'NOT_SET' | 'NOT_ALLOWED' | 'PARTIALLY_ALLOWED' | 'ALLOWED_ALL'>('NOT_SET');
 
 	// Country input mode: 'select' for dropdown, 'input' for manual entry
@@ -63,6 +64,7 @@
 			countryAlpha2Code: countryAlpha2Code || undefined,
 			committee: committee || undefined,
 			pronouns: pronouns || undefined,
+			id: id || undefined,
 			mediaConsentStatus
 		};
 		setFileData([entry]);
@@ -236,6 +238,19 @@
 				placeholder="z.B. sie/ihr"
 				class="input input-bordered w-full"
 				bind:value={pronouns}
+			/>
+		</label>
+
+		<!-- ID (optional) -->
+		<label class="form-control w-full">
+			<div class="label">
+				<span class="label-text">ID</span>
+			</div>
+			<input
+				type="text"
+				placeholder="z.B. 12345"
+				class="input input-bordered w-full"
+				bind:value={id}
 			/>
 		</label>
 

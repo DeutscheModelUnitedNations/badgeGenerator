@@ -12,6 +12,7 @@ import {
 } from './pdfCommon';
 import { setGenerationProgress } from './stores/progress.svelte';
 import { addWarning, WarningType } from './stores/warnings.svelte';
+import * as bwipjs from '@bwip-js/browser';
 
 const defaultStyles: PageStyles = {
 	margin: {
@@ -98,7 +99,7 @@ class PDFVerticalBadgeGenerator {
 			this.rowData.alternativeImage ? 'alternativeImage' : 'countryAlpha2Code'
 		]);
 
-		const IMG_MARGIN_BOTTOM = 40;
+		const IMG_MARGIN_BOTTOM = 50;
 		const IMG_MARGIN_SIDE = 30;
 		const IMG_WIDTH = width - IMG_MARGIN_SIDE * 2;
 		const IMG_HEIGHT = IMG_WIDTH * 0.75;
@@ -151,6 +152,36 @@ class PDFVerticalBadgeGenerator {
 			console.error('Error loading brand logo:', error);
 		}
 
+		// Generate barcode if id is provided
+		if (this.rowData.id) {
+			try {
+				const barcodeCanvas = document.createElement('canvas');
+				bwipjs.toCanvas(barcodeCanvas, {
+					bcid: 'code128',
+					text: this.rowData.id,
+					scale: 2,
+					height: 8,
+					includetext: false
+				});
+				const barcodeImg = barcodeCanvas.toDataURL('image/png');
+				const barcodeData = barcodeImg.split(',')[1];
+				const barcodeUint8 = Uint8Array.from(atob(barcodeData), (c) => c.charCodeAt(0));
+				const pngImage = await this.pdfDoc.embedPng(barcodeUint8);
+
+				const BARCODE_WIDTH = IMG_WIDTH;
+				const BARCODE_HEIGHT = 8;
+				const BARCODE_GAP = 3;
+				this.page.drawImage(pngImage, {
+					x: CENTERLINE - BARCODE_WIDTH / 2,
+					y: IMG_MARGIN_BOTTOM - BARCODE_GAP - BARCODE_HEIGHT,
+					width: BARCODE_WIDTH,
+					height: BARCODE_HEIGHT
+				});
+			} catch (error) {
+				console.error('Error generating barcode:', error);
+			}
+		}
+
 		const DMUN_LOGO_WIDTH = 50;
 		const DMUN_LOGO_HEIGHT = DMUN_LOGO_WIDTH / 2.18;
 		const DMUN_MARGIN_BOTTOM = 10;
@@ -169,7 +200,7 @@ class PDFVerticalBadgeGenerator {
 			console.error('Error loading DMUN logo:', error);
 		}
 
-		const TITLE_MARGIN_TOP = 92;
+		const TITLE_MARGIN_TOP = 85;
 		drawText(
 			this,
 			this.helveticaBold,
@@ -190,7 +221,7 @@ class PDFVerticalBadgeGenerator {
 			[`${this.rowNumber}`, 'countryName']
 		);
 
-		const NAME_MARGIN_TOP = 106;
+		const NAME_MARGIN_TOP = 98;
 		const nameText = this.rowData.committee
 			? `${this.rowData.name} (${this.rowData.committee})`
 			: this.rowData.name;
@@ -208,7 +239,7 @@ class PDFVerticalBadgeGenerator {
 			[`${this.rowNumber}`, 'name']
 		);
 
-		const PRONOUNS_MARGIN_TOP = 116;
+		const PRONOUNS_MARGIN_TOP = 108;
 		if (this.rowData.pronouns) {
 			this.page.drawText(this.rowData.pronouns, {
 				x:

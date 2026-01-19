@@ -1,4 +1,4 @@
-name,committee,countryName,countryAlpha2Code,alternativeImage,pronouns,mediaConsentStatus
-Max Mustermann,GV,Dominikanische Republik,do,,er/ihm,ALLOWED_ALL
-Mia Musterfrau,WiSo,UN Women,,dmun.png,sie/ihr,PARTIALLY_ALLOWED
-Lukas Beispiel,SR,Vereinigte Arabische Emirate,ae,,er/ihm,NOT_ALLOWED
+name,committee,countryName,countryAlpha2Code,alternativeImage,pronouns,mediaConsentStatus,id
+Max Mustermann,GV,Dominikanische Republik,do,,er/ihm,ALLOWED_ALL,12345
+Mia Musterfrau,WiSo,UN Women,,dmun.png,sie/ihr,PARTIALLY_ALLOWED,67890
+Lukas Beispiel,SR,Vereinigte Arabische Emirate,ae,,er/ihm,NOT_ALLOWED,

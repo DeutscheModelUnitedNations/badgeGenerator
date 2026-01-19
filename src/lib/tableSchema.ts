@@ -34,6 +34,7 @@ export const rowSchema = z
 
 		alternativeImage: z.string().optional(),
 		pronouns: z.string().optional(),
+		id: z.string().optional(),
 		mediaConsentStatus: z
 			.enum(['NOT_ALLOWED', 'PARTIALLY_ALLOWED', 'ALLOWED_ALL', 'NOT_SET'], {
 				description: 'Mediennutzungserlaubnis'

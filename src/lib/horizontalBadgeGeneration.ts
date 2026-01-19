@@ -13,6 +13,7 @@ import {
 } from './pdfCommon';
 import { setGenerationProgress } from './stores/progress.svelte';
 import { addWarning, WarningType } from './stores/warnings.svelte';
+import * as bwipjs from '@bwip-js/browser';
 
 const defaultStyles: PageStyles = {
 	margin: {
@@ -149,6 +150,38 @@ class PDFHorizontalBadgeGenerator {
 			});
 		} catch (error) {
 			console.error('Error loading logo:', error);
+		}
+
+		// Generate barcode if id is provided (rotated 90°, next to flag)
+		if (this.rowData.id) {
+			try {
+				const barcodeCanvas = document.createElement('canvas');
+				bwipjs.toCanvas(barcodeCanvas, {
+					bcid: 'code128',
+					text: this.rowData.id,
+					scale: 2,
+					height: 8,
+					includetext: false
+				});
+				const barcodeImg = barcodeCanvas.toDataURL('image/png');
+				const barcodeData = barcodeImg.split(',')[1];
+				const barcodeUint8 = Uint8Array.from(atob(barcodeData), (c) => c.charCodeAt(0));
+				const pngImage = await this.pdfDoc.embedPng(barcodeUint8);
+
+				const BARCODE_LENGTH = IMG_HEIGHT; // Same height as flag
+				const BARCODE_THICKNESS = 8;
+				const BARCODE_GAP = 3;
+				const FLAG_CENTER_Y = IMG_MARGIN_BOTTOM + IMG_HEIGHT / 2;
+				this.page.drawImage(pngImage, {
+					x: IMG_MARGIN_LEFT + IMG_WIDTH + BARCODE_GAP + BARCODE_THICKNESS,
+					y: FLAG_CENTER_Y - BARCODE_LENGTH / 2,
+					width: BARCODE_LENGTH,
+					height: BARCODE_THICKNESS,
+					rotate: degrees(90)
+				});
+			} catch (error) {
+				console.error('Error generating barcode:', error);
+			}
 		}
 
 		this.page.setFont(this.helvetica);

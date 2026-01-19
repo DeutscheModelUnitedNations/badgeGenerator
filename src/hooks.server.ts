@@ -88,10 +88,48 @@ for (const col of migrationColumns) {
 	});
 }
 
+// CORS configuration from environment
+// Set CORS_ALLOWED_ORIGINS to comma-separated list of allowed origins, or "*" for all
+// Example: CORS_ALLOWED_ORIGINS=https://app1.example.com,https://app2.example.com
+const corsAllowedOrigins = process.env.CORS_ALLOWED_ORIGINS || '*';
+const allowedOriginsList = corsAllowedOrigins === '*' ? null : corsAllowedOrigins.split(',').map(o => o.trim());
+
+function getCorsOrigin(requestOrigin: string | null): string | null {
+	if (!requestOrigin) return null;
+	if (corsAllowedOrigins === '*') return '*';
+	if (allowedOriginsList?.includes(requestOrigin)) return requestOrigin;
+	return null;
+}
+
 export const handle: Handle = async ({ event, resolve }) => {
 	if (!event.locals.db) {
 		event.locals.db = db;
 	}
+
+	const origin = event.request.headers.get('origin');
+	const corsOrigin = getCorsOrigin(origin);
+
+	// Handle CORS preflight for /api/session routes
+	if (event.request.method === 'OPTIONS' && event.url.pathname.startsWith('/api/session')) {
+		return new Response(null, {
+			status: 204,
+			headers: {
+				'Access-Control-Allow-Origin': corsOrigin || '',
+				'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+				'Access-Control-Allow-Headers': 'Content-Type',
+				'Access-Control-Max-Age': '86400'
+			}
+		});
+	}
+
 	const resp = await resolve(event);
+
+	// Add CORS headers to /api/session responses
+	if (event.url.pathname.startsWith('/api/session') && corsOrigin) {
+		resp.headers.set('Access-Control-Allow-Origin', corsOrigin);
+		resp.headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+		resp.headers.set('Access-Control-Allow-Headers', 'Content-Type');
+	}
+
 	return resp;
 };

@@ -43,8 +43,10 @@ export const POST: RequestHandler = async ({ request, locals, url }) => {
 			);
 		});
 
-		const baseUrl = url.origin;
-		const sessionUrl = `${baseUrl}/?t=${token}`;
+		// Use X-Forwarded-Proto header if behind a proxy, otherwise use url.origin
+		const proto = request.headers.get('x-forwarded-proto') || url.protocol.replace(':', '');
+		const host = request.headers.get('x-forwarded-host') || url.host;
+		const sessionUrl = `${proto}://${host}/?t=${token}`;
 
 		return new Response(
 			JSON.stringify({
@@ -54,12 +56,7 @@ export const POST: RequestHandler = async ({ request, locals, url }) => {
 			}),
 			{
 				status: 201,
-				headers: {
-					'Content-Type': 'application/json',
-					'Access-Control-Allow-Origin': '*',
-					'Access-Control-Allow-Methods': 'POST, OPTIONS',
-					'Access-Control-Allow-Headers': 'Content-Type'
-				}
+				headers: { 'Content-Type': 'application/json' }
 			}
 		);
 	} catch (err) {
@@ -69,15 +66,4 @@ export const POST: RequestHandler = async ({ request, locals, url }) => {
 			headers: { 'Content-Type': 'application/json' }
 		});
 	}
-};
-
-export const OPTIONS: RequestHandler = async () => {
-	return new Response(null, {
-		status: 204,
-		headers: {
-			'Access-Control-Allow-Origin': '*',
-			'Access-Control-Allow-Methods': 'POST, OPTIONS',
-			'Access-Control-Allow-Headers': 'Content-Type'
-		}
-	});
 };

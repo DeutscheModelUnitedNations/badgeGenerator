@@ -2,54 +2,12 @@
 	import { type TableSchema } from '$lib/tableSchema';
 	import * as XLSX from 'xlsx';
 	import ImageUploader from '$lib/components/ImageUploader.svelte';
-	import { onMount } from 'svelte';
 
 	interface Props {
 		setFileData: (data: TableSchema) => void;
 	}
 
 	let { setFileData }: Props = $props();
-
-	let sheetsUrl = $state('');
-
-	onMount(() => {
-		const savedUrl = localStorage.getItem('sheetsUrl');
-		if (savedUrl) sheetsUrl = savedUrl;
-	});
-
-	// Update local storage when sheetsUrl changes.
-	$effect(() => localStorage.setItem('sheetsUrl', sheetsUrl));
-
-	let loading = $state(false);
-
-	async function fetchGoogleSheets(url: string) {
-		try {
-			loading = true;
-			const match = url.match(/spreadsheets\/d\/([^/]+)/);
-			if (!match) throw new Error('Invalid Google Sheets URL');
-
-			const spreadsheetId = match[1];
-			const response = await fetch(`/api/sheets?id=${spreadsheetId}`);
-
-			// Handle non-OK responses using text if JSON parsing fails.
-			if (!response.ok) {
-				const errorText = await response.text();
-				console.error(response.status, errorText);
-				throw new Error(errorText || 'Error fetching Google Sheet.');
-			}
-
-			const data = await response.json();
-			data.shift(); // Remove header row
-			setFileData(data);
-		} catch (error) {
-			console.error('Error fetching sheet:', error);
-			let message = 'Error fetching Google Sheet.';
-			if (error instanceof Error) message = error.message;
-			alert(`Error fetching Google Sheet:\n${message}`);
-		} finally {
-			loading = false;
-		}
-	}
 
 	function parseFileToJson(buffer: ArrayBuffer, filename: string): TableSchema {
 		const isCSV = filename.toLowerCase().endsWith('.csv');
@@ -83,24 +41,6 @@
 		}
 	}}
 />
-
-<div class="text-xl">ODER</div>
-
-<div class="join w-full max-w-lg">
-	<input
-		type="text"
-		placeholder="Google Sheets URL"
-		class="input join-item input-bordered input-primary flex-1"
-		bind:value={sheetsUrl}
-	/>
-	<button class="btn btn-primary join-item" onclick={() => fetchGoogleSheets(sheetsUrl)}>
-		{#if loading}
-			<span class="loading loading-dots"></span>
-		{:else}
-			<span>Google Sheets laden</span>
-		{/if}
-	</button>
-</div>
 
 <div class="divider mx-auto w-full max-w-lg"></div>
 

@@ -125,13 +125,21 @@
 			</div>
 		</div>
 	{:else}
-		<div class="alert alert-warning !flex w-auto !flex-col !items-center !justify-center">
-			<div class="text-center">
-				<strong>Warnungen</strong><br />Bei der PDF-Erstellung sind ein paar Warnungen aufgetreten.
-				Bitte prüfe sie gründlich.
+		{#if getWarnings().length > 0}
+			<div class="alert alert-warning !flex w-auto !flex-col !items-center !justify-center">
+				<div class="text-center">
+					<strong>Warnungen</strong><br />Bei der PDF-Erstellung sind ein paar Warnungen aufgetreten.
+					Bitte prüfe sie gründlich.
+				</div>
+				<WarningTable errors={getWarnings()} />
 			</div>
-			<WarningTable errors={getWarnings()} />
-		</div>
+		{:else}
+			<div class="alert alert-success w-auto">
+				<div class="text-center">
+					<strong>PDF erfolgreich erstellt!</strong>
+				</div>
+			</div>
+		{/if}
 		<button
 			class="btn btn-primary w-full max-w-lg"
 			onclick={() => {

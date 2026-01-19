@@ -107,6 +107,12 @@
 		deleteConfirmImage = image;
 	}
 
+	async function handleEdit(updatedImage: ImageListItem) {
+		await invalidateAll();
+		previewImage = updatedImage;
+		showToast(`"${updatedImage.title}" wurde bearbeitet`);
+	}
+
 	async function confirmDelete() {
 		if (!deleteConfirmImage) return;
 
@@ -322,7 +328,7 @@
 </div>
 
 <!-- Preview Modal -->
-<ImagePreviewModal image={previewImage} onClose={() => (previewImage = null)} />
+<ImagePreviewModal image={previewImage} onClose={() => (previewImage = null)} onEdit={handleEdit} />
 
 <!-- Rename Modal -->
 <RenameModal image={renameImage} onClose={() => (renameImage = null)} onRename={handleRename} />

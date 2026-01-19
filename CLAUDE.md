@@ -55,6 +55,19 @@ Each generator uses async class lifecycle:
 
 MUN-SH, MUNBW, DMUN, UN - logos stored in `static/logo/color/` and `static/logo/watermark/`
 
+### Modifying Data Fields
+
+When adding, changing, or removing a data field (like `id`, `pronouns`, etc.), update these locations:
+
+1. **`src/lib/tableSchema.ts`** - Zod schema defining field validation
+2. **`src/routes/Start.svelte`** - Single entry form fields and state variables
+3. **`src/routes/+page.svelte`** - URL search params parsing (if field should be URL-prefillable)
+4. **`README.md`** - URL parameters documentation table
+5. **PDF generators** (if field affects PDF output):
+   - `src/lib/placardGeneration.ts`
+   - `src/lib/verticalBadgeGeneration.ts`
+   - `src/lib/horizontalBadgeGeneration.ts`
+
 ### Important Notes
 
 - UI text is in German

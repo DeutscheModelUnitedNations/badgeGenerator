@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { persistedState } from 'svelte-persisted-state';
 	import Tabs from '$lib/components/Tabs.svelte';
 	import type { Brand } from '$lib/types';
 	import PDFPreviewer from '$lib/components/PDFPreviewer.svelte';
@@ -17,7 +18,18 @@
 		{ title: 'Namensschild Hochkant', value: 'VERTICAL_BADGE' },
 		{ title: 'Namensschild Quer', value: 'HORIZONTAL_BADGE' }
 	] as const;
-	let type = $state<PDFType>('PLACARD');
+
+	// Persisted state for type and brand
+	const typeState = persistedState<PDFType>('badge-generator-type', 'PLACARD');
+	const brandState = persistedState<Brand>('badge-generator-brand', 'MUN-SH');
+
+	// Local state that syncs with persisted state (for Tabs binding)
+	let type = $state<PDFType>(typeState.current);
+	let brand = $state<Brand>(brandState.current);
+
+	// Sync local state changes to persisted state
+	$effect(() => { typeState.current = type; });
+	$effect(() => { brandState.current = brand; });
 
 	const brandingTabs = [
 		{ title: 'MUN-SH', value: 'MUN-SH' },
@@ -25,7 +37,6 @@
 		{ title: "DMUN", value: 'DMUN' },
 		{ title: "United Nations", value: "UN"}
 	] as const;
-	let brand = $state<Brand>('MUN-SH');
 
 	let loading = $state(false);
 </script>

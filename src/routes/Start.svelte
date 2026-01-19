@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { type TableSchema, type TableRow } from '$lib/tableSchema';
 	import * as XLSX from 'xlsx';
 	import ImageUploader from '$lib/components/ImageUploader.svelte';
@@ -6,9 +7,18 @@
 
 	interface Props {
 		setFileData: (data: TableSchema) => void;
+		initialParams?: {
+			name?: string;
+			country?: string;
+			committee?: string;
+			pronouns?: string;
+			id?: string;
+			media?: string;
+		};
+		hasUrlParams?: boolean;
 	}
 
-	let { setFileData }: Props = $props();
+	let { setFileData, initialParams, hasUrlParams }: Props = $props();
 
 	// Mode state: 'file' for file upload, 'single' for single entry
 	let mode = $state<'file' | 'single'>('file');
@@ -80,6 +90,28 @@
 		const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
 		return XLSX.utils.sheet_to_json(firstSheet);
 	}
+
+	// Initialize form from URL params
+	onMount(() => {
+		if (hasUrlParams && initialParams) {
+			mode = 'single';
+			if (initialParams.name) name = initialParams.name;
+			if (initialParams.country) {
+				const code = initialParams.country.toUpperCase();
+				countryAlpha2Code = code;
+				handleCountrySelect(code);
+			}
+			if (initialParams.committee) committee = initialParams.committee;
+			if (initialParams.pronouns) pronouns = initialParams.pronouns;
+			if (initialParams.id) id = initialParams.id;
+			if (initialParams.media) {
+				const mediaValue = initialParams.media.toUpperCase();
+				if (['NOT_SET', 'NOT_ALLOWED', 'PARTIALLY_ALLOWED', 'ALLOWED_ALL'].includes(mediaValue)) {
+					mediaConsentStatus = mediaValue as typeof mediaConsentStatus;
+				}
+			}
+		}
+	});
 </script>
 
 <h1 class="text-4xl">Namens- und Länderschilder</h1>

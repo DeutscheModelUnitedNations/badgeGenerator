@@ -15,6 +15,21 @@ This repository contains a tool designed to generate Name Badges and Placards fo
 - Custom Image Support: Add a custom image to the badge or use built in flag library
 - Easy-to-use interface for generating printable tags
 
+## URL Parameters
+
+You can pre-fill the single entry form using URL parameters. When any parameter is present, the form automatically switches to single entry mode.
+
+| Parameter | Description | Example |
+|-----------|-------------|---------|
+| `name` | Person's full name | `Max Mustermann` |
+| `country` | ISO 3166-1 alpha-2 code or "UN" | `DE`, `US`, `UN` |
+| `committee` | Committee name | `Generalversammlung` |
+| `pronouns` | Pronouns | `sie/ihr` |
+| `id` | Unique identifier | `12345` |
+| `media` | Media consent | `NOT_SET`, `NOT_ALLOWED`, `PARTIALLY_ALLOWED`, `ALLOWED_ALL` |
+
+**Example:** `/?name=Max%20Mustermann&country=DE&committee=GA`
+
 ## FAQ
 
 ### Why does the project not supply an arm64 image?

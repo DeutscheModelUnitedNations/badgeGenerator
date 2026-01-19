@@ -85,7 +85,7 @@
 <h1 class="text-4xl">Namens- und Länderschilder</h1>
 
 <!-- Mode toggle tabs -->
-<div role="tablist" class="tabs tabs-boxed w-full max-w-lg">
+<div role="tablist" class="tabs tabs-box w-full max-w-lg">
 	<button
 		role="tab"
 		class="tab"
@@ -111,7 +111,7 @@
 		type="file"
 		accept=".xlsx,.csv"
 		multiple={false}
-		class="file-input file-input-bordered file-input-primary w-full max-w-lg"
+		class="file-input file-input-primary w-full max-w-lg"
 		onchange={(e) => {
 			const f = (e.target as HTMLInputElement).files?.[0];
 			if (f) {
@@ -137,25 +137,21 @@
 	<!-- Single entry mode -->
 	<form class="w-full max-w-lg space-y-4" onsubmit={(e) => { e.preventDefault(); submitSingle(); }}>
 		<!-- Name (required) -->
-		<label class="form-control w-full">
-			<div class="label">
-				<span class="label-text">Name *</span>
-			</div>
+		<fieldset class="fieldset w-full">
+			<legend class="fieldset-legend">Name *</legend>
 			<input
 				type="text"
 				placeholder="Max Mustermann"
-				class="input input-bordered w-full"
+				class="input w-full"
 				bind:value={name}
 				required
 			/>
-		</label>
+		</fieldset>
 
 		<!-- Country input mode toggle -->
-		<div class="form-control w-full">
-			<div class="label">
-				<span class="label-text">Land *</span>
-			</div>
-			<div role="tablist" class="tabs tabs-boxed tabs-sm mb-2">
+		<fieldset class="fieldset w-full">
+			<legend class="fieldset-legend">Land *</legend>
+			<div role="tablist" class="tabs tabs-box tabs-sm mb-2">
 				<button
 					type="button"
 					role="tab"
@@ -179,7 +175,7 @@
 			{#if countryInputMode === 'select'}
 				<!-- Country dropdown -->
 				<select
-					class="select select-bordered w-full"
+					class="select w-full"
 					onchange={(e) => handleCountrySelect((e.target as HTMLSelectElement).value)}
 					required
 				>
@@ -196,76 +192,66 @@
 					<input
 						type="text"
 						placeholder="Ländername"
-						class="input input-bordered flex-1"
+						class="input flex-1"
 						bind:value={countryName}
 						required
 					/>
 					<input
 						type="text"
 						placeholder="Code (z.B. DE)"
-						class="input input-bordered w-24"
+						class="input w-24"
 						bind:value={countryAlpha2Code}
 						maxlength="2"
 						required
 					/>
 				</div>
-				<div class="label">
-					<span class="label-text-alt">ISO 3166-1 alpha-2 Code oder "UN"</span>
-				</div>
+				<p class="fieldset-label">ISO 3166-1 alpha-2 Code oder "UN"</p>
 			{/if}
-		</div>
+		</fieldset>
 
 		<!-- Committee (optional) -->
-		<label class="form-control w-full">
-			<div class="label">
-				<span class="label-text">Ausschuss</span>
-			</div>
+		<fieldset class="fieldset w-full">
+			<legend class="fieldset-legend">Ausschuss</legend>
 			<input
 				type="text"
 				placeholder="z.B. Generalversammlung"
-				class="input input-bordered w-full"
+				class="input w-full"
 				bind:value={committee}
 			/>
-		</label>
+		</fieldset>
 
 		<!-- Pronouns (optional) -->
-		<label class="form-control w-full">
-			<div class="label">
-				<span class="label-text">Pronomen</span>
-			</div>
+		<fieldset class="fieldset w-full">
+			<legend class="fieldset-legend">Pronomen</legend>
 			<input
 				type="text"
 				placeholder="z.B. sie/ihr"
-				class="input input-bordered w-full"
+				class="input w-full"
 				bind:value={pronouns}
 			/>
-		</label>
+		</fieldset>
 
 		<!-- ID (optional) -->
-		<label class="form-control w-full">
-			<div class="label">
-				<span class="label-text">ID</span>
-			</div>
+		<fieldset class="fieldset w-full">
+			<legend class="fieldset-legend">ID</legend>
 			<input
 				type="text"
 				placeholder="z.B. 12345"
-				class="input input-bordered w-full"
+				class="input w-full"
 				bind:value={id}
 			/>
-		</label>
+		</fieldset>
 
 		<!-- Media consent status (optional) -->
-		<label class="form-control w-full">
-			<div class="label">
-				<span class="label-text">Medienfreigabe</span>
-			</div>
-			<select class="select select-bordered w-full" bind:value={mediaConsentStatus}>
+		<fieldset class="fieldset w-full">
+			<legend class="fieldset-legend">Medienfreigabe</legend>
+			<select class="select w-full" bind:value={mediaConsentStatus}>
 				<option value="NOT_SET">Nicht festgelegt</option>
 				<option value="ALLOWED_ALL">Vollständig erlaubt</option>
 				<option value="PARTIALLY_ALLOWED">Teilweise erlaubt</option>
 				<option value="NOT_ALLOWED">Nicht erlaubt</option>
 			</select>
-		</label>
+		</fieldset>
 
 		<!-- Submit button -->
 		<button

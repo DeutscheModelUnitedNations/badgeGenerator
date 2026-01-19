@@ -31,7 +31,7 @@ export const GET: RequestHandler = async ({ locals, params, url }) => {
 		}
 
 		console.info('Image found:', params.imgTitle);
-		return new Response(image, {
+		return new Response(new Uint8Array(image), {
 			headers: {
 				'Content-Type': `image/${result.extension}`,
 				'Content-Disposition': `inline; filename="${params.imgTitle}.${result.extension}"`,

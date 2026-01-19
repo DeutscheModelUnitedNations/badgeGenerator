@@ -1,3 +1,7 @@
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
+@import '@deutschemodelunitednations/corporate-identity/css/fonts';
+@import '@deutschemodelunitednations/corporate-identity/css/shades/dmun';
+@import 'tailwindcss';
+@plugin "@tailwindcss/typography";
+@plugin "daisyui";
+@import '@deutschemodelunitednations/corporate-identity/css/theme/dmun-light';
+@import '@deutschemodelunitednations/corporate-identity/css/theme/dmun-dark';

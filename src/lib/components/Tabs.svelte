@@ -11,7 +11,7 @@
 	let { tabs, activeTab = $bindable(), disabled = false }: Props = $props();
 </script>
 
-<div role="tablist" class="tabs-boxed tabs">
+<div role="tablist" class="tabs-box tabs">
 	{#each tabs as { title, value }}
 		<button
 			role="tab"

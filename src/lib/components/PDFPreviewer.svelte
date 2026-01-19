@@ -26,7 +26,7 @@
 	async function generatePreview() {
 		try {
 			const pdfBytes = await generatePDF(fileData, brand, type);
-			const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+			const blob = new Blob([new Uint8Array(pdfBytes)], { type: 'application/pdf' });
 			pdfUrl = URL.createObjectURL(blob);
 		} catch (error) {
 			console.error('Error generating preview:', error);

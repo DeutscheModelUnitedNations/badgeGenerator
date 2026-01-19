@@ -73,8 +73,19 @@ export const POST: RequestHandler = async ({ request, locals, url }) => {
 			);
 		});
 
+		const redirectUrl = `${url.origin}/?t=${token}`;
+
+		// For JSON requests (likely cross-origin API calls), return JSON response
+		// For form submissions, redirect to the page
+		if (contentType.includes('application/json')) {
+			return new Response(JSON.stringify({ token, url: redirectUrl }), {
+				status: 201,
+				headers: { 'Content-Type': 'application/json' }
+			});
+		}
+
 		// Redirect to the main page with the token
-		throw redirect(302, `/?t=${token}`);
+		throw redirect(302, redirectUrl);
 	} catch (err) {
 		// Re-throw redirect responses
 		if (err instanceof Response || (err && typeof err === 'object' && 'status' in err)) {

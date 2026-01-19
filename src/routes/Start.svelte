@@ -3,6 +3,8 @@
 	import { type TableSchema, type TableRow } from '$lib/tableSchema';
 	import * as XLSX from 'xlsx';
 	import ImageUploader from '$lib/components/ImageUploader.svelte';
+	import ImageSelectModal from '$lib/components/ImageSelectModal.svelte';
+	import CountrySelectModal from '$lib/components/CountrySelectModal.svelte';
 	import WorldCountries from 'world-countries';
 
 	interface Props {
@@ -27,13 +29,21 @@
 	let name = $state('');
 	let countryName = $state('');
 	let countryAlpha2Code = $state('');
+	let alternativeImage = $state('');
 	let committee = $state('');
 	let pronouns = $state('');
 	let id = $state('');
 	let mediaConsentStatus = $state<'NOT_SET' | 'NOT_ALLOWED' | 'PARTIALLY_ALLOWED' | 'ALLOWED_ALL'>('NOT_SET');
 
-	// Country input mode: 'select' for dropdown, 'input' for manual entry
-	let countryInputMode = $state<'select' | 'input'>('select');
+	// Country input mode: 'country' for country selection, 'image' for custom image
+	let countryInputMode = $state<'country' | 'image'>('country');
+
+	// Modal visibility state
+	let showImageModal = $state(false);
+	let showCountryModal = $state(false);
+
+	// Optional override for country display name
+	let countryNameOverride = $state('');
 
 	// Country options for dropdown
 	const countryOptions = [
@@ -58,20 +68,33 @@
 	}
 
 	// Reset country fields when switching input mode
-	function switchCountryInputMode(newMode: 'select' | 'input') {
+	function switchCountryInputMode(newMode: 'country' | 'image') {
 		countryInputMode = newMode;
 		countryName = '';
 		countryAlpha2Code = '';
+		alternativeImage = '';
+		countryNameOverride = '';
 	}
 
 	// Submit handler for single mode
 	function submitSingle() {
-		if (!name || !countryName || !countryAlpha2Code) return;
+		// Validate based on mode
+		if (countryInputMode === 'image') {
+			if (!name || !countryName || !alternativeImage) return;
+		} else {
+			if (!name || !countryName || !countryAlpha2Code) return;
+		}
+
+		// Use override name if provided, otherwise use the selected country name
+		const displayName = countryInputMode === 'country' && countryNameOverride.trim()
+			? countryNameOverride.trim()
+			: countryName;
 
 		const entry: TableRow = {
 			name,
-			countryName,
-			countryAlpha2Code: countryAlpha2Code || undefined,
+			countryName: displayName,
+			countryAlpha2Code: countryInputMode !== 'image' ? (countryAlpha2Code || undefined) : undefined,
+			alternativeImage: countryInputMode === 'image' ? alternativeImage : undefined,
 			committee: committee || undefined,
 			pronouns: pronouns || undefined,
 			id: id || undefined,
@@ -188,56 +211,65 @@
 					type="button"
 					role="tab"
 					class="tab"
-					class:tab-active={countryInputMode === 'select'}
-					onclick={() => switchCountryInputMode('select')}
+					class:tab-active={countryInputMode === 'country'}
+					onclick={() => switchCountryInputMode('country')}
 				>
-					Auswahl
+					Land
 				</button>
 				<button
 					type="button"
 					role="tab"
 					class="tab"
-					class:tab-active={countryInputMode === 'input'}
-					onclick={() => switchCountryInputMode('input')}
+					class:tab-active={countryInputMode === 'image'}
+					onclick={() => switchCountryInputMode('image')}
 				>
-					Eingabe
+					Bild
 				</button>
 			</div>
 
-			{#if countryInputMode === 'select'}
-				<!-- Country dropdown -->
-				<select
-					class="select w-full"
-					onchange={(e) => handleCountrySelect((e.target as HTMLSelectElement).value)}
+			{#if countryInputMode === 'country'}
+				<!-- Country selection with modal -->
+				<div class="flex gap-2 mb-2">
+					<input
+						type="text"
+						placeholder="Land auswählen..."
+						class="input flex-1"
+						value={countryName}
+						readonly
+					/>
+					<button type="button" class="btn btn-primary" onclick={() => showCountryModal = true}>
+						Suchen
+					</button>
+				</div>
+				<input
+					type="text"
+					placeholder="Anzeigename überschreiben (optional)"
+					class="input w-full"
+					bind:value={countryNameOverride}
+				/>
+				<p class="fieldset-label">Optional: Eigenen Namen für das Land angeben</p>
+			{:else if countryInputMode === 'image'}
+				<!-- Alternative image input -->
+				<input
+					type="text"
+					placeholder="Anzeigename (z.B. Vereinte Nationen)"
+					class="input w-full mb-2"
+					bind:value={countryName}
 					required
-				>
-					<option value="" disabled selected={!countryAlpha2Code}>Land auswählen...</option>
-					{#each countryOptions as country}
-						<option value={country.code} selected={countryAlpha2Code === country.code}>
-							{country.name}
-						</option>
-					{/each}
-				</select>
-			{:else}
-				<!-- Manual country input -->
+				/>
 				<div class="flex gap-2">
 					<input
 						type="text"
-						placeholder="Ländername"
+						placeholder="Bild auswählen..."
 						class="input flex-1"
-						bind:value={countryName}
-						required
+						value={alternativeImage}
+						readonly
 					/>
-					<input
-						type="text"
-						placeholder="Code (z.B. DE)"
-						class="input w-24"
-						bind:value={countryAlpha2Code}
-						maxlength="2"
-						required
-					/>
+					<button type="button" class="btn btn-primary" onclick={() => showImageModal = true}>
+						Suchen
+					</button>
 				</div>
-				<p class="fieldset-label">ISO 3166-1 alpha-2 Code oder "UN"</p>
+				<p class="fieldset-label">Wähle ein Bild aus der Bilderliste</p>
 			{/if}
 		</fieldset>
 
@@ -289,11 +321,32 @@
 		<button
 			type="submit"
 			class="btn btn-primary w-full"
-			disabled={!name || !countryAlpha2Code}
+			disabled={!name || !countryName || (countryInputMode === 'image' ? !alternativeImage : !countryAlpha2Code)}
 		>
 			Schild erstellen
 		</button>
 	</form>
+{/if}
+
+{#if showImageModal}
+	<ImageSelectModal
+		onSelect={(title) => {
+			alternativeImage = title;
+			showImageModal = false;
+		}}
+		onClose={() => showImageModal = false}
+	/>
+{/if}
+
+{#if showCountryModal}
+	<CountrySelectModal
+		onSelect={(code, name) => {
+			countryAlpha2Code = code;
+			countryName = name;
+			showCountryModal = false;
+		}}
+		onClose={() => showCountryModal = false}
+	/>
 {/if}
 
 <div class="divider mx-auto w-full max-w-lg"></div>

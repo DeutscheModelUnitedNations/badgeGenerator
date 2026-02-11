@@ -4,13 +4,9 @@ import WorldCountries from 'world-countries';
 // Define a base schema with the common properties
 export const rowSchema = z
 	.object({
-		name: z.string().nonempty({
-			message: 'Zelle muss einen Wert enthalten'
-		}),
+		name: z.string().optional(),
 		committee: z.string().optional(),
-		countryName: z.string().nonempty({
-			message: 'Zelle muss einen Wert enthalten'
-		}),
+		countryName: z.string().optional(),
 		countryAlpha2Code: z
 			.string()
 			.optional()
@@ -39,13 +35,23 @@ export const rowSchema = z
 			.enum(['NOT_ALLOWED', 'PARTIALLY_ALLOWED', 'ALLOWED_ALL', 'NOT_SET'], {
 				description: 'Mediennutzungserlaubnis'
 			})
-			.default('NOT_ALLOWED')
+			.optional()
 	})
+	// Require either name OR committee
+	.refine((data) => data.name || data.committee, {
+		message: `Entweder <span class="badge badge-neutral">name</span> oder <span class="badge badge-neutral">committee</span> muss einen Wert enthalten`
+	})
+	// Require either countryAlpha2Code OR alternativeImage
 	.refine((data) => data.countryAlpha2Code || data.alternativeImage, {
 		message: `Entweder <span class="badge badge-neutral">countryAlpha2Code</span> oder <span class="badge badge-neutral">alternativeImage</span> muss einen Wert enthalten`
 	})
+	// Don't allow both countryAlpha2Code AND alternativeImage
 	.refine((data) => !(data.countryAlpha2Code && data.alternativeImage), {
 		message: `<span class="badge badge-neutral">countryAlpha2Code</span> und <span class="badge badge-neutral">alternativeImage</span> dürfen nicht gleichzeitig einen Wert enthalten`
+	})
+	// Require countryName when using alternativeImage without countryAlpha2Code
+	.refine((data) => !(data.alternativeImage && !data.countryAlpha2Code && !data.countryName), {
+		message: `<span class="badge badge-neutral">countryName</span> muss einen Wert enthalten, wenn <span class="badge badge-neutral">alternativeImage</span> ohne <span class="badge badge-neutral">countryAlpha2Code</span> verwendet wird`
 	});
 
 export const tableSchema = z.array(rowSchema);

@@ -1,5 +1,5 @@
 import { rgb } from 'pdf-lib';
-import type { Brand, PDFType, PlacardTemplateOptions } from './types';
+import type { Brand, CountryNameLanguage, PDFType, PlacardTemplateOptions } from './types';
 import type { TableSchema } from './tableSchema';
 import { generatePlacardPDF } from './placardGeneration';
 import { generateVerticalBadgePDF } from './verticalBadgeGeneration';
@@ -7,6 +7,7 @@ import { generateHorizontalBadgePDF } from './horizontalBadgeGeneration';
 import { resetGenerationProgress } from './stores/progress.svelte';
 import { addWarning, resetWarnings, WarningType } from './stores/warnings.svelte';
 import replaceSpecialChars from 'replace-special-characters';
+import { resolveTableData } from './dataResolver';
 
 export interface PageStyles {
 	margin: { left: number; right: number; top: number; bottom: number };
@@ -140,18 +141,22 @@ export async function generatePDF(
 	brand: Brand,
 	type: PDFType,
 	showTrimBorder: boolean = false,
-	placardTemplate?: PlacardTemplateOptions
+	placardTemplate?: PlacardTemplateOptions,
+	countryNameLanguage: CountryNameLanguage = 'deu'
 ) {
-	resetGenerationProgress(fileData.length);
+	// Resolve missing countryName and name fields before generation
+	const resolvedData = resolveTableData(fileData, countryNameLanguage);
+
+	resetGenerationProgress(resolvedData.length);
 	resetWarnings();
 
 	switch (type) {
 		case 'PLACARD':
-			return await generatePlacardPDF(fileData, brand, placardTemplate);
+			return await generatePlacardPDF(resolvedData, brand, placardTemplate);
 		case 'VERTICAL_BADGE':
-			return await generateVerticalBadgePDF(fileData, brand, showTrimBorder);
+			return await generateVerticalBadgePDF(resolvedData, brand, showTrimBorder);
 		case 'HORIZONTAL_BADGE':
-			return await generateHorizontalBadgePDF(fileData, brand, showTrimBorder);
+			return await generateHorizontalBadgePDF(resolvedData, brand, showTrimBorder);
 		default:
 			throw new Error('PDF type not supported');
 	}

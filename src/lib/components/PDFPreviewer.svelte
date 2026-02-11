@@ -7,7 +7,7 @@
 		getGenerationProgressText
 	} from '$lib/stores/progress.svelte';
 	import { tableSchema, type TableRow } from '$lib/tableSchema';
-	import type { Brand, PDFType, PlacardTemplateOptions } from '$lib/types';
+	import type { Brand, CountryNameLanguage, PDFType, PlacardTemplateOptions } from '$lib/types';
 	import type { SafeParseError } from 'zod';
 	import { getWarnings } from '$lib/stores/warnings.svelte';
 
@@ -16,18 +16,19 @@
 		brand: Brand;
 		type: PDFType;
 		showTrimBorder?: boolean;
+		countryNameLanguage?: CountryNameLanguage;
 		placardTemplate?: PlacardTemplateOptions;
 		downloadFilename: string;
 		loading: boolean;
 	}
-	let { fileData, brand, type, showTrimBorder = false, placardTemplate, downloadFilename, loading = $bindable() }: Props = $props();
+	let { fileData, brand, type, showTrimBorder = false, countryNameLanguage = 'deu', placardTemplate, downloadFilename, loading = $bindable() }: Props = $props();
 
 	let validationFailed = $state<SafeParseError<TableRow>['error']['issues']>([]);
 	let pdfUrl = $state('');
 
 	async function generatePreview() {
 		try {
-			const pdfBytes = await generatePDF(fileData, brand, type, showTrimBorder, placardTemplate);
+			const pdfBytes = await generatePDF(fileData, brand, type, showTrimBorder, placardTemplate, countryNameLanguage);
 			const blob = new Blob([new Uint8Array(pdfBytes)], { type: 'application/pdf' });
 			pdfUrl = URL.createObjectURL(blob);
 		} catch (error) {
@@ -62,9 +63,10 @@
 		if (type) {
 			pdfUrl = '';
 		}
-		// Track showTrimBorder and placardTemplate to trigger re-render when changed
+		// Track showTrimBorder, placardTemplate, and countryNameLanguage to trigger re-render when changed
 		showTrimBorder;
 		placardTemplate;
+		countryNameLanguage;
 	});
 </script>
 

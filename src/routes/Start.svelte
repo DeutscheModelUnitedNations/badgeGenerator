@@ -81,10 +81,13 @@
 	// Submit handler for single mode
 	function submitSingle() {
 		// Validate based on mode
+		// Require either name OR committee
+		if (!name && !committee) return;
+
 		if (countryInputMode === 'image') {
-			if (!name || !countryName || !alternativeImage) return;
+			if (!countryName || !alternativeImage) return;
 		} else {
-			if (!name || !countryName || !countryAlpha2Code) return;
+			if (!countryAlpha2Code) return;
 		}
 
 		// Use override name if provided, otherwise use the selected country name
@@ -93,8 +96,8 @@
 			: countryName;
 
 		const entry: TableRow = {
-			name,
-			countryName: displayName,
+			name: name || undefined,
+			countryName: displayName || undefined,
 			countryAlpha2Code: countryInputMode !== 'image' ? (countryAlpha2Code || undefined) : undefined,
 			alternativeImage: countryInputMode === 'image' ? alternativeImage : undefined,
 			committee: committee || undefined,
@@ -114,6 +117,41 @@
 
 		const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
 		return XLSX.utils.sheet_to_json(firstSheet);
+	}
+
+	// Header options for CSV template generator
+	const headerOptions = [
+		{ key: 'name', label: 'Name', description: 'Name der Person (oder Ausschuss wenn leer)', default: true },
+		{ key: 'committee', label: 'Ausschuss', description: 'Wird als Name verwendet, wenn kein Name angegeben', default: true },
+		{ key: 'countryAlpha2Code', label: 'Ländercode', description: 'ISO 3166-1 Alpha-2 (z.B. "DE") oder "UN"', default: true },
+		{ key: 'countryName', label: 'Ländername', description: 'Anzeigename (automatisch aus Code wenn leer)', default: false },
+		{ key: 'alternativeImage', label: 'Alternatives Bild', description: 'Bildname aus Bilderliste statt Flagge', default: false },
+		{ key: 'pronouns', label: 'Pronomen', description: 'z.B. "sie/ihr", "er/ihm"', default: false },
+		{ key: 'id', label: 'ID', description: 'Eindeutige ID für Barcode', default: false },
+		{ key: 'mediaConsentStatus', label: 'Medienfreigabe', description: 'ALLOWED_ALL, PARTIALLY_ALLOWED, NOT_ALLOWED, NOT_SET', default: false },
+	];
+
+	let selectedHeaders = $state<Set<string>>(new Set(headerOptions.filter(h => h.default).map(h => h.key)));
+
+	function toggleHeader(key: string) {
+		if (selectedHeaders.has(key)) {
+			selectedHeaders.delete(key);
+		} else {
+			selectedHeaders.add(key);
+		}
+		selectedHeaders = new Set(selectedHeaders);
+	}
+
+	function downloadTemplate() {
+		const headers = headerOptions.filter(h => selectedHeaders.has(h.key)).map(h => h.key);
+		const csvContent = headers.join(',') + '\n' + headers.map(() => '').join(',') + '\n';
+		const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+		const url = URL.createObjectURL(blob);
+		const link = document.createElement('a');
+		link.href = url;
+		link.download = 'template.csv';
+		link.click();
+		URL.revokeObjectURL(url);
 	}
 
 	// Initialize form from session data
@@ -202,26 +240,54 @@
 
 	<div class="divider mx-auto w-full max-w-lg"></div>
 
-	<h3 class="text-xl">Beispieldatei</h3>
-	<div class="join">
+	<h3 class="text-xl">Vorlagen</h3>
+	<div class="join mb-4">
 		<a href="/sample/badges.csv" download="sample-badges.csv" class="btn btn-primary join-item">
 			<i class="fa-solid fa-download w-4 h-4"></i>
-			CSV
+			Beispiel CSV
 		</a>
+	</div>
+
+	<!-- Template generator -->
+	<div class="w-full max-w-lg p-4 border border-base-300 rounded-lg bg-base-200">
+		<h4 class="font-bold mb-2">Leere Vorlage erstellen</h4>
+		<p class="text-sm text-base-content/70 mb-3">Wähle die Spalten für deine Vorlage:</p>
+
+		<div class="space-y-2 mb-4">
+			{#each headerOptions as header}
+				<label class="flex items-start gap-2 cursor-pointer">
+					<input
+						type="checkbox"
+						class="checkbox checkbox-sm mt-0.5"
+						checked={selectedHeaders.has(header.key)}
+						onchange={() => toggleHeader(header.key)}
+					/>
+					<div>
+						<span class="font-medium">{header.label}</span>
+						<span class="text-xs text-base-content/60 block">{header.description}</span>
+					</div>
+				</label>
+			{/each}
+		</div>
+
+		<button class="btn btn-primary btn-sm w-full" onclick={downloadTemplate} disabled={selectedHeaders.size === 0}>
+			<i class="fa-solid fa-download w-4 h-4"></i>
+			Vorlage herunterladen
+		</button>
 	</div>
 {:else}
 	<!-- Single entry mode -->
 	<form class="w-full max-w-lg space-y-4" onsubmit={(e) => { e.preventDefault(); submitSingle(); }}>
-		<!-- Name (required) -->
+		<!-- Name (required if no committee) -->
 		<fieldset class="fieldset w-full">
-			<legend class="fieldset-legend">Name *</legend>
+			<legend class="fieldset-legend">Name {committee ? '' : '*'}</legend>
 			<input
 				type="text"
 				placeholder="Max Mustermann"
 				class="input w-full"
 				bind:value={name}
-				required
 			/>
+			<p class="fieldset-label">Name oder Ausschuss muss angegeben werden</p>
 		</fieldset>
 
 		<!-- Country input mode toggle -->
@@ -298,15 +364,16 @@
 			{/if}
 		</fieldset>
 
-		<!-- Committee (optional) -->
+		<!-- Committee (required if no name) -->
 		<fieldset class="fieldset w-full">
-			<legend class="fieldset-legend">Ausschuss</legend>
+			<legend class="fieldset-legend">Ausschuss {name ? '' : '*'}</legend>
 			<input
 				type="text"
 				placeholder="z.B. Generalversammlung"
 				class="input w-full"
 				bind:value={committee}
 			/>
+			<p class="fieldset-label">Wird als Name verwendet, wenn kein Name angegeben ist</p>
 		</fieldset>
 
 		<!-- Pronouns (optional) -->
@@ -346,7 +413,7 @@
 		<button
 			type="submit"
 			class="btn btn-primary w-full"
-			disabled={!name || !countryName || (countryInputMode === 'image' ? !alternativeImage : !countryAlpha2Code)}
+			disabled={(!name && !committee) || (countryInputMode === 'image' ? (!countryName || !alternativeImage) : !countryAlpha2Code)}
 		>
 			Schild erstellen
 			<i class="fa-solid fa-arrow-right w-4 h-4"></i>

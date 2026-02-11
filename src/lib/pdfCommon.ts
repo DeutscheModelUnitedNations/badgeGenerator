@@ -1,5 +1,5 @@
 import { rgb } from 'pdf-lib';
-import type { Brand, PDFType } from './types';
+import type { Brand, PDFType, PlacardTemplateOptions } from './types';
 import type { TableSchema } from './tableSchema';
 import { generatePlacardPDF } from './placardGeneration';
 import { generateVerticalBadgePDF } from './verticalBadgeGeneration';
@@ -135,13 +135,19 @@ export function getBrandInfo(brand: Brand) {
 	return { brandLogo, primaryColor, conferenceName };
 }
 
-export async function generatePDF(fileData: TableSchema, brand: Brand, type: PDFType, showTrimBorder: boolean = false) {
+export async function generatePDF(
+	fileData: TableSchema,
+	brand: Brand,
+	type: PDFType,
+	showTrimBorder: boolean = false,
+	placardTemplate?: PlacardTemplateOptions
+) {
 	resetGenerationProgress(fileData.length);
 	resetWarnings();
 
 	switch (type) {
 		case 'PLACARD':
-			return await generatePlacardPDF(fileData, brand);
+			return await generatePlacardPDF(fileData, brand, placardTemplate);
 		case 'VERTICAL_BADGE':
 			return await generateVerticalBadgePDF(fileData, brand, showTrimBorder);
 		case 'HORIZONTAL_BADGE':

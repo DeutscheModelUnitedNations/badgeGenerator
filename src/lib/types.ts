@@ -29,3 +29,10 @@ export interface ImageEditSettings {
 	offsetY: number;        // -100 to 100 (percentage)
 	backgroundColor: string; // Hex color
 }
+
+export type PlacardTemplateMode = 'front' | 'back' | 'both';
+
+export interface PlacardTemplateOptions {
+	templateBytes: Uint8Array;
+	mode: PlacardTemplateMode;
+}

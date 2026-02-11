@@ -32,6 +32,12 @@ export interface ImageEditSettings {
 
 export type PlacardTemplateMode = 'front' | 'back' | 'both';
 
+export type CountryNameLanguage =
+	| 'ara' | 'ces' | 'deu' | 'eng' | 'est' | 'fin' | 'fra'
+	| 'hrv' | 'hun' | 'ita' | 'jpn' | 'kor' | 'nld'
+	| 'per' | 'pol' | 'por' | 'rus' | 'slk' | 'spa'
+	| 'srp' | 'swe' | 'tur' | 'urd' | 'zho';
+
 export interface PlacardTemplateOptions {
 	templateBytes: Uint8Array;
 	mode: PlacardTemplateMode;

@@ -1,5 +1,5 @@
 import { PDFDocument, rgb, StandardFonts, PageSizes, PDFPage, PDFFont, degrees, PDFEmbeddedPage } from 'pdf-lib';
-import type { TableRow, TableSchema } from './tableSchema';
+import type { ResolvedTableRow, ResolvedTableSchema } from './dataResolver';
 import type { Brand, PlacardTemplateOptions } from './types';
 import {
 	type PageStyles,
@@ -40,7 +40,7 @@ class PDFPlacardGenerator {
 	styles: PageStyles;
 	helvetica!: PDFFont;
 	helveticaBold!: PDFFont;
-	rowData!: TableRow;
+	rowData!: ResolvedTableRow;
 	brand!: Brand;
 	rowNumber!: number;
 	frontOverlayPage?: PDFEmbeddedPage;
@@ -48,7 +48,7 @@ class PDFPlacardGenerator {
 	constructor(
 		pdfDoc: PDFDocument,
 		styles = defaultStyles,
-		rowData: TableRow,
+		rowData: ResolvedTableRow,
 		brand: Brand,
 		rowNumber: number,
 		frontOverlayPage?: PDFEmbeddedPage
@@ -348,7 +348,7 @@ class PDFPlacardGenerator {
 }
 
 export async function generatePlacardPDF(
-	fileData: TableSchema,
+	fileData: ResolvedTableSchema,
 	brand: Brand,
 	templateOptions?: PlacardTemplateOptions
 ): Promise<Uint8Array> {

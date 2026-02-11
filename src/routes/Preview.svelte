@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { persistedState } from 'svelte-persisted-state';
 	import Tabs from '$lib/components/Tabs.svelte';
-	import type { Brand, PlacardTemplateMode } from '$lib/types';
+	import type { Brand, CountryNameLanguage, PlacardTemplateMode } from '$lib/types';
 	import PDFPreviewer from '$lib/components/PDFPreviewer.svelte';
 	import type { PDFType } from '$lib/types';
 	import type { TableSchema } from '$lib/tableSchema';
@@ -20,15 +20,17 @@
 		{ title: 'Namensschild Quer', value: 'HORIZONTAL_BADGE', icon: 'fa-solid fa-id-card' }
 	] as const;
 
-	// Persisted state for type, brand, and trim border
+	// Persisted state for type, brand, trim border, and country name language
 	const typeState = persistedState<PDFType>('badge-generator-type', 'PLACARD');
 	const brandState = persistedState<Brand>('badge-generator-brand', 'MUN-SH');
 	const trimBorderState = persistedState<'SHOW' | 'HIDE'>('badge-generator-trim-border', 'HIDE');
+	const countryNameLanguageState = persistedState<CountryNameLanguage>('badge-generator-country-language', 'deu');
 
 	// Local state that syncs with persisted state (for Tabs binding)
 	let type = $state<PDFType>(typeState.current);
 	let brand = $state<Brand>(brandState.current);
 	let trimBorder = $state<'SHOW' | 'HIDE'>(trimBorderState.current);
+	let countryNameLanguage = $state<CountryNameLanguage>(countryNameLanguageState.current);
 
 	// Derived value for the generators
 	let showTrimBorder = $derived(trimBorder === 'SHOW');
@@ -37,6 +39,26 @@
 	$effect(() => { typeState.current = type; });
 	$effect(() => { brandState.current = brand; });
 	$effect(() => { trimBorderState.current = trimBorder; });
+	$effect(() => { countryNameLanguageState.current = countryNameLanguage; });
+
+	// Language options for country names
+	const languageOptions: { code: CountryNameLanguage; label: string }[] = [
+		{ code: 'deu', label: 'Deutsch' },
+		{ code: 'eng', label: 'English' },
+		{ code: 'fra', label: 'Francais' },
+		{ code: 'spa', label: 'Espanol' },
+		{ code: 'ita', label: 'Italiano' },
+		{ code: 'pol', label: 'Polski' },
+		{ code: 'nld', label: 'Nederlands' },
+		{ code: 'rus', label: 'Русский' },
+		{ code: 'zho', label: '中文' },
+		{ code: 'jpn', label: '日本語' },
+		{ code: 'kor', label: '한국어' },
+		{ code: 'ara', label: 'العربية' }
+	];
+
+	// State for collapsible language selector
+	let showLanguageSelector = $state(false);
 
 	const brandingTabs = [
 		{ title: 'MUN-SH', value: 'MUN-SH', icon: 'fa-solid fa-tag' },
@@ -132,6 +154,40 @@
 	<Tabs tabs={trimBorderTabs} bind:activeTab={trimBorder} disabled={loading} />
 {/if}
 
+<!-- Country name language selector (collapsible) -->
+<div class="w-full max-w-5xl mt-4 flex flex-col items-center">
+	<button
+		class="btn btn-sm btn-ghost gap-2"
+		onclick={() => showLanguageSelector = !showLanguageSelector}
+		disabled={loading}
+	>
+		<i class="fa-solid fa-language w-4 h-4"></i>
+		Ländernamen-Sprache: {languageOptions.find(l => l.code === countryNameLanguage)?.label ?? 'Deutsch'}
+		<i class="fa-solid fa-chevron-{showLanguageSelector ? 'up' : 'down'} w-3 h-3"></i>
+	</button>
+
+	{#if showLanguageSelector}
+		<div class="mt-2 p-3 border border-base-300 rounded-lg bg-base-200">
+			<p class="text-sm text-base-content/70 mb-2">
+				Sprache für automatisch generierte Ländernamen (wenn countryName in den Daten fehlt)
+			</p>
+			<div class="flex flex-wrap gap-2">
+				{#each languageOptions as lang}
+					<button
+						class="btn btn-sm"
+						class:btn-primary={countryNameLanguage === lang.code}
+						class:btn-ghost={countryNameLanguage !== lang.code}
+						onclick={() => countryNameLanguage = lang.code}
+						disabled={loading}
+					>
+						{lang.label}
+					</button>
+				{/each}
+			</div>
+		</div>
+	{/if}
+</div>
+
 {#if type === 'PLACARD'}
 	<div class="w-full max-w-5xl mt-4 p-4 border border-base-300 rounded-lg bg-base-200">
 		<h3 class="font-bold mb-2">Vorlage (optional)</h3>
@@ -195,6 +251,7 @@
 		{type}
 		{brand}
 		{showTrimBorder}
+		{countryNameLanguage}
 		placardTemplate={templateBytes && type === 'PLACARD' && !templateError && !templateModeInvalid ? { templateBytes, mode: templateMode } : undefined}
 		downloadFilename={type === 'PLACARD'
 			? 'placards.pdf'

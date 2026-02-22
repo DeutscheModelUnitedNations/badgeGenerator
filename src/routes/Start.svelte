@@ -112,7 +112,7 @@
 		const isCSV = filename.toLowerCase().endsWith('.csv');
 
 		const workbook = isCSV
-			? XLSX.read(new TextDecoder().decode(buffer), { type: 'string' })
+			? XLSX.read(new TextDecoder().decode(buffer), { type: 'string', raw: true })
 			: XLSX.read(buffer, { type: 'array' });
 
 		const firstSheet = workbook.Sheets[workbook.SheetNames[0]];

@@ -1,4 +1,4 @@
-import { rgb } from 'pdf-lib';
+import { rgb, type PDFDocument, type PDFFont } from 'pdf-lib';
 import type { Brand, CountryNameLanguage, PDFType, PlacardTemplateOptions } from './types';
 import type { TableSchema } from './tableSchema';
 import { generatePlacardPDF } from './placardGeneration';
@@ -6,8 +6,8 @@ import { generateVerticalBadgePDF } from './verticalBadgeGeneration';
 import { generateHorizontalBadgePDF } from './horizontalBadgeGeneration';
 import { resetGenerationProgress } from './stores/progress.svelte';
 import { addWarning, resetWarnings, WarningType } from './stores/warnings.svelte';
-import replaceSpecialChars from 'replace-special-characters';
 import { resolveTableData } from './dataResolver';
+import fontkit from '@pdf-lib/fontkit';
 
 export interface PageStyles {
 	margin: { left: number; right: number; top: number; bottom: number };
@@ -58,6 +58,19 @@ export async function fetchFinalImageData(
 	}
 }
 
+export async function loadCustomFonts(pdfDoc: PDFDocument): Promise<{ regular: PDFFont; bold: PDFFont }> {
+	pdfDoc.registerFontkit(fontkit);
+	const [regularBytes, boldBytes] = await Promise.all([
+		fetch('/fonts/Inter-Regular.ttf').then((res) => res.arrayBuffer()),
+		fetch('/fonts/Inter-Bold.ttf').then((res) => res.arrayBuffer())
+	]);
+	const [regular, bold] = await Promise.all([
+		pdfDoc.embedFont(regularBytes),
+		pdfDoc.embedFont(boldBytes)
+	]);
+	return { regular, bold };
+}
+
 export async function drawImage(this_: any, img: Uint8Array, type: string, options: {}) {
 	if (type === 'image/jpeg' || type === 'image/jpg')
 		return this_.page.drawImage(await this_.pdfDoc.embedJpg(img), options);
@@ -68,7 +81,7 @@ export async function drawImage(this_: any, img: Uint8Array, type: string, optio
 export function drawText(this_: any, font: any, text: string, options: any, path: string[]) {
 	this_.page.setFont(font);
 	const { width: pageWidth } = this_.page.getSize();
-	const textWidth = widthOfTextAtSize(this_, font, text, options.size);
+	const textWidth = font.widthOfTextAtSize(text, options.size);
 	if (pageWidth - 10 < textWidth) {
 		addWarning({
 			type: WarningType.SUPERSET,
@@ -77,29 +90,11 @@ export function drawText(this_: any, font: any, text: string, options: any, path
 			path
 		});
 	}
-	try {
-		this_.page.drawText(text, options);
-	} catch (error: any) {
-		console.log(error);
-		addWarning({
-			type: WarningType.TEXT,
-			message: 'Text enthält unzulässige Zeichen und wurde bereinigt.',
-			details: error?.message,
-			path
-		});
-		const sanitizedText = replaceSpecialChars(text);
-		this_.page.drawText(sanitizedText, options);
-	}
+	this_.page.drawText(text, options);
 }
 
-export function widthOfTextAtSize(this_: any, font: any, text: string, size: number) {
-	try {
-		return font.widthOfTextAtSize(text, size);
-	} catch (error: any) {
-		console.log(error.message);
-		const sanitizedText = replaceSpecialChars(text);
-		return font.widthOfTextAtSize(sanitizedText, size);
-	}
+export function widthOfTextAtSize(_this: any, font: any, text: string, size: number) {
+	return font.widthOfTextAtSize(text, size);
 }
 
 export function getBrandInfo(brand: Brand) {

@@ -17,7 +17,8 @@
 	const typeTabs = [
 		{ title: 'Länderschild', value: 'PLACARD', icon: 'fa-solid fa-sign-hanging' },
 		{ title: 'Namensschild Hochkant', value: 'VERTICAL_BADGE', icon: 'fa-solid fa-address-card' },
-		{ title: 'Namensschild Quer', value: 'HORIZONTAL_BADGE', icon: 'fa-solid fa-id-card' }
+		{ title: 'Namensschild Quer', value: 'HORIZONTAL_BADGE', icon: 'fa-solid fa-id-card' },
+		{ title: 'Flagge', value: 'FLAG', icon: 'fa-solid fa-flag' }
 	] as const;
 
 	// Persisted state for type, brand, trim border, and country name language
@@ -149,10 +150,13 @@
 </button>
 <h1 class="text-4xl">Generator</h1>
 <Tabs tabs={typeTabs} bind:activeTab={type} disabled={loading} />
-<Tabs tabs={brandingTabs} bind:activeTab={brand} disabled={loading} />
+{#if type !== 'FLAG'}
+	<Tabs tabs={brandingTabs} bind:activeTab={brand} disabled={loading} />
+{/if}
 {#if type !== 'PLACARD'}
 	<Tabs tabs={trimBorderTabs} bind:activeTab={trimBorder} disabled={loading} />
 {/if}
+
 
 <!-- Country name language selector (collapsible) -->
 <div class="w-full max-w-5xl mt-4 flex flex-col items-center">
@@ -257,7 +261,9 @@
 			? 'placards.pdf'
 			: type === 'VERTICAL_BADGE'
 				? 'vertical-badges.pdf'
-				: 'horizontal-badges.pdf'}
+				: type === 'HORIZONTAL_BADGE'
+					? 'horizontal-badges.pdf'
+					: 'flag-pages.pdf'}
 		bind:loading
 	/>
 </div>

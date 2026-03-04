@@ -4,6 +4,7 @@ import type { TableSchema } from './tableSchema';
 import { generatePlacardPDF } from './placardGeneration';
 import { generateVerticalBadgePDF } from './verticalBadgeGeneration';
 import { generateHorizontalBadgePDF } from './horizontalBadgeGeneration';
+import { generateFlagPDF } from './flagGeneration';
 import { resetGenerationProgress } from './stores/progress.svelte';
 import { addWarning, resetWarnings, WarningType } from './stores/warnings.svelte';
 import { resolveTableData } from './dataResolver';
@@ -152,6 +153,8 @@ export async function generatePDF(
 			return await generateVerticalBadgePDF(resolvedData, brand, showTrimBorder);
 		case 'HORIZONTAL_BADGE':
 			return await generateHorizontalBadgePDF(resolvedData, brand, showTrimBorder);
+		case 'FLAG':
+			return await generateFlagPDF(resolvedData, showTrimBorder);
 		default:
 			throw new Error('PDF type not supported');
 	}

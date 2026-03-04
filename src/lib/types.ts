@@ -20,7 +20,7 @@ export interface ImageListItem {
 
 export type Brand = 'MUN-SH' | 'MUNBW' | "DMUN" | "UN";
 
-export type PDFType = 'PLACARD' | 'VERTICAL_BADGE' | 'HORIZONTAL_BADGE';
+export type PDFType = 'PLACARD' | 'VERTICAL_BADGE' | 'HORIZONTAL_BADGE' | 'FLAG';
 
 export interface ImageEditSettings {
 	fitMode: 'cover' | 'contain';

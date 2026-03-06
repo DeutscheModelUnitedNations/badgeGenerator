@@ -111,10 +111,13 @@ export const handle: Handle = async ({ event, resolve }) => {
 
 	// Handle CORS preflight for /api/session routes
 	if (event.request.method === 'OPTIONS' && event.url.pathname.startsWith('/api/session')) {
+		if (!corsOrigin) {
+			return new Response(null, { status: 403 });
+		}
 		return new Response(null, {
 			status: 204,
 			headers: {
-				'Access-Control-Allow-Origin': corsOrigin || '',
+				'Access-Control-Allow-Origin': corsOrigin,
 				'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
 				'Access-Control-Allow-Headers': 'Content-Type',
 				'Access-Control-Max-Age': '86400'

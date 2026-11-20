@@ -6,6 +6,7 @@
       "name": "nametaggenerator",
       "dependencies": {
         "@bwip-js/browser": "^4.8.0",
+        "@deutschemodelunitednations/world-countries": "^0.1.0",
         "@pdf-lib/fontkit": "^1.1.1",
         "svelte-persisted-state": "^1.2.0",
         "world-countries": "^5.1.0",
@@ -49,6 +50,8 @@
     "@bwip-js/browser": ["@bwip-js/browser@4.8.0", "", {}, "sha512-RhN8N7wwBxe2FZBO7xZc2LEfGfnaFiy6Xf/7nmorrcCp3JA1sYF+iJeC1jF697lAi03Avlve7PNTThDq+0Rl3w=="],
 
     "@deutschemodelunitednations/corporate-identity": ["@deutschemodelunitednations/corporate-identity@1.1.10", "", { "dependencies": { "@fontsource/outfit": "^5.2.8", "@fontsource/roboto-mono": "^5.2.8", "@fontsource/vollkorn": "^5.2.10", "esbuild": "^0.25.10", "js-yaml": "^4.1.0", "tailwind-shades": "^1.1.2" } }, "sha512-OjjAdEODbg2D+ZWwdzEGjFBclF3hFgP1d/ib6Xz29cd5KzbumKzeKxiDl/xVURcwEovwlyf5Q5qc+kG/iXNNYA=="],
+
+    "@deutschemodelunitednations/world-countries": ["@deutschemodelunitednations/world-countries@0.1.0", "", { "peerDependencies": { "world-countries": ">=5" } }, "sha512-IzrWCiczFg5ujzR0JuAZf33fdy9q+7cwrCMYX3qL55O4KdJOnbrPAOcnJ7tulAXBajkZ29XT0Cdix53JvVbf5w=="],
 
     "@emnapi/runtime": ["@emnapi/runtime@1.8.1", "", { "dependencies": { "tslib": "^2.4.0" } }, "sha512-mehfKSMWjjNol8659Z8KxEMrdSJDDot5SXMq00dM8BN4o+CLNXQ0xH2V7EchNHV4RmbZLmmPdEaXZc5H2FXmDg=="],
 

@@ -5,7 +5,7 @@
 	import ImageUploader from '$lib/components/ImageUploader.svelte';
 	import ImageSelectModal from '$lib/components/ImageSelectModal.svelte';
 	import CountrySelectModal from '$lib/components/CountrySelectModal.svelte';
-	import WorldCountries from 'world-countries';
+	import WorldCountries from '@deutschemodelunitednations/world-countries';
 
 	interface Props {
 		setFileData: (data: TableSchema) => void;

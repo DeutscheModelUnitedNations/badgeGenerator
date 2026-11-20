@@ -1,4 +1,4 @@
-import WorldCountries from 'world-countries';
+import WorldCountries from '@deutschemodelunitednations/world-countries';
 import type { CountryNameLanguage } from './types';
 import type { TableRow, TableSchema } from './tableSchema';
 

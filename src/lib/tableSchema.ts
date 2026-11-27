@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import WorldCountries from 'world-countries';
+import WorldCountries from '@deutschemodelunitednations/world-countries';
 
 // Define a base schema with the common properties
 export const rowSchema = z
@@ -30,7 +30,10 @@ export const rowSchema = z
 
 		alternativeImage: z.string().optional(),
 		pronouns: z.string().optional(),
-		id: z.union([z.string(), z.number()]).optional().transform((val) => val?.toString()),
+		id: z
+			.union([z.string(), z.number()])
+			.optional()
+			.transform((val) => val?.toString()),
 		mediaConsentStatus: z
 			.enum(['NOT_ALLOWED', 'PARTIALLY_ALLOWED', 'ALLOWED_ALL', 'NOT_SET'], {
 				description: 'Mediennutzungserlaubnis'

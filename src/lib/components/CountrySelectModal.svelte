@@ -1,5 +1,5 @@
 <script lang="ts">
-	import WorldCountries from 'world-countries';
+	import WorldCountries from '@deutschemodelunitednations/world-countries';
 
 	interface Props {
 		onSelect: (code: string, name: string) => void;
